@@ -129,7 +129,7 @@ class PlayScreen(Screen):
         enabled, _ = self.action_state(a)
         if not enabled or self.game.attacks_left > 0:
             self.msg = "That action isn't available right now."
-        elif a["id"] in ("double_attack", "stealth"):       # no target needed
+        elif a["id"] in ("barrage_attacks", "stealth"):       # no target needed
             self.do(lambda: self.game.use_ability(a["ship"]))
         else:
             self.selected = None if self.selected == a["id"] else a["id"]

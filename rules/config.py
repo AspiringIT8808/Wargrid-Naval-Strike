@@ -10,7 +10,7 @@ GRID = 15
 
 SHIP_SPECS = [
     # Frigate option B (rechargeable): uses=None, cooldown=2
-    dict(name="Frigate",   size=5, key="double_attack", label="DOUBLE ATTACK", uses=3, cooldown=0),
+    dict(name="Frigate",   size=5, key="barrage_attacks", label="BARRAGE ATTACK", uses=3, cooldown=0),
     # Destroyer: one-time now; set cooldown=N (and uses=None) to let it recharge
     dict(name="Destroyer", size=3, key="relocate",      label="RELOCATE",      uses=1, cooldown=0),
     # Carrier option B (rechargeable): uses=None, cooldown=2 and RECON_SIZE = 2
