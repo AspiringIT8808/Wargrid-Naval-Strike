@@ -8,6 +8,7 @@ import sys
 
 import pygame
 
+from audio.sound_manager import SoundManager
 from rules.game import Game
 from ui.display import clock, screen
 from ui.screens.gameover import GameOverScreen
@@ -16,6 +17,7 @@ from ui.screens.menu import MenuScreen
 from ui.screens.play import PlayScreen
 from ui.screens.setup import SetupScreen
 from ui.theme import BG
+from ui.widgets import MuteButton
 
 
 class App:
@@ -23,6 +25,8 @@ class App:
         self.options = {"bomb": True, "repair": True, "shield": True}   # optional mechanics
         self.mode = "ai"                    # "ai" or "duo" (two players, one screen)
         self.game = None
+        self.sound_manager = SoundManager()
+        self.mute_btn = MuteButton()
         self.screens = {
             "menu": MenuScreen(self),
             "setup": SetupScreen(self),
@@ -31,6 +35,7 @@ class App:
             "gameover": GameOverScreen(self),
         }
         self.current = self.screens["menu"]
+        self.sound_manager.start_music()
 
     # ----- navigation -----
     def goto(self, name, **kwargs):
@@ -53,8 +58,8 @@ class App:
         else:
             setup.begin()
 
-    @staticmethod
-    def quit():
+    def quit(self):
+        self.sound_manager.stop_music()
         pygame.quit()
         sys.exit()
 
@@ -64,9 +69,15 @@ class App:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     self.quit()
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                    if self.mute_btn.hit(e.pos):
+                        self.sound_manager.toggle_mute()
+                        continue
                 self.current.on_event(e)
             self.current.update()
             screen.fill(BG)
             self.current.draw()
+            self.mute_btn.draw(muted=self.sound_manager.is_muted)
             pygame.display.flip()
             clock.tick(60)
+
