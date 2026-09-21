@@ -21,7 +21,7 @@ SHIP_SPECS = [
 ]
 
 RECON_SIZE = 3        # 3 = 3x3 reveal (2 = 2x2, where the clicked cell is the top-left)
-STEALTH_ROUNDS = 1    # how many enemy turns the Submarine is untargetable
+STEALTH_ROUNDS = 3    # how many enemy turns the Submarine is untargetable
 REPAIR_USES = 3
 SHIELD_USES = 3
 
