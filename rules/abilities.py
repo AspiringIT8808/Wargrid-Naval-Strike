@@ -36,10 +36,10 @@ class Ability:
 
 
 # ----- the effects -----------------------------------------------------------
-def double_attack(game, ship, target):
+def barrage_attacks(game, ship, target):
     """Frigate. The ability REPLACES the normal attack: two shots instead of one."""
-    game.attacks_left = 2
-    return None, "uses DOUBLE ATTACK (two shots this turn)"
+    game.attacks_left = 4
+    return None, "uses BARRAGE ATTACK (two shots this turn)"
 
 
 def relocate(game, ship, target):
@@ -76,7 +76,7 @@ def stealth(game, ship, target):
 
 # ability key (from config.SHIP_SPECS) -> effect function
 ABILITY_EFFECTS = {
-    "double_attack": double_attack,
+    "barrage_attacks": barrage_attacks,
     "relocate": relocate,
     "recon": recon,
     "row_scan": row_scan,

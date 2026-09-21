@@ -109,7 +109,7 @@ class Game:
         """
         target depends on the ability:
           recon -> (row, col) cell    row_scan -> row index    relocate -> list of new cells
-          double_attack / stealth -> None
+          barrage_attacks / stealth -> None
         """
         err = self._start_check()
         if err:
