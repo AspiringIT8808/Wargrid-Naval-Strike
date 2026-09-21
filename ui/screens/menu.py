@@ -27,7 +27,7 @@ class MenuScreen(Screen):
             self.app.quit()
 
     def draw(self):
-        text("BATTLESHIPS", (W // 2, 130), HUGE, ACCENT, center=True)
+        text("WARGRID: NAVAL STRIKE", (W // 2, 130), HUGE, ACCENT, center=True)
         text("TACTICAL EDITION  -  15x15", (W // 2, 180), FONT, MUTED, center=True)
         rules = ["Each turn: ATTACK or use ONE ability (not both).",
                  "Exception: the Submarine's Stealth also gives it one shot.",

@@ -193,7 +193,7 @@ class PlayScreen(Screen):
         mine, theirs = g.boards[v], g.boards[1 - v]
         over = g.winner is not None
 
-        text("BATTLESHIPS // TACTICAL EDITION", (W // 2, 26), BIG, ACCENT, center=True)
+        text("WARGRID: NAVAL STRIKE // TACTICAL EDITION", (W // 2, 26), BIG, ACCENT, center=True)
         own_label = "YOUR FLEET" if self.app.mode == "ai" else f"{g.names[v].upper()} - FLEET"
         text(own_label, (LEFT_X, 60), FONT, TEXT)
         text("ENEMY WATERS", (RIGHT_X, 60), FONT, TEXT)
