@@ -16,14 +16,24 @@ class GameOverScreen(Screen):
                 self.app.quit()
 
     def draw(self):
-        self.app.screens["play"].draw()             # the board underneath (enemy fleet is revealed)
+        self.app.screens["play"].draw()
         g = self.game
+
         shade = pygame.Surface((W, 200), pygame.SRCALPHA)
         shade.fill((0, 0, 0, 200))
         screen.blit(shade, (0, 290))
-        if self.app.mode == "ai":
-            title, col = ("VICTORY", ACCENT) if g.winner == 0 else ("DEFEAT", RED)
+
+        if g.winner == 0:
+            text("CONGRATULATIONS!", (W // 2, 340), HUGE, ACCENT, center=True)
+            text("You won the battle!", (W // 2, 395), FONT, TEXT, center=True)
         else:
-            title, col = f"{g.names[g.winner].upper()} WINS", ACCENT
-        text(title, (W // 2, 350), HUGE, col, center=True)
-        text("Press ENTER for the menu or ESC to quit.", (W // 2, 415), FONT, TEXT, center=True)
+            text("GAME OVER", (W // 2, 340), HUGE, RED, center=True)
+            text("You lost the battle.", (W // 2, 395), FONT, TEXT, center=True)
+
+        text(
+            "Press ENTER for the menu or ESC to quit.",
+            (W // 2, 445),
+            FONT,
+            TEXT,
+            center=True
+        )
