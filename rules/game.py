@@ -26,6 +26,7 @@ class Game:
         self.current = 0
         self.attacks_left = 0       # > 0 while the player is mid-turn (Frigate / Submarine)
         self.winner = None
+        self.difficulty = "intermediate"   # NEW LINE: "beginner" | "intermediate" | "expert"
         self.log = []               # every line, whole game
         self.turn_log = []          # lines from the turn in progress
         self.last_turn_log = []     # lines from the turn that just ended
