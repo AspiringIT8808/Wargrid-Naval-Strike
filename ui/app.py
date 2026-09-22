@@ -18,6 +18,7 @@ from ui.screens.play import PlayScreen
 from ui.screens.setup import SetupScreen
 from ui.theme import BG
 from ui.widgets import MuteButton
+from ui.screens.settings import SettingsScreen
 
 
 class App:
@@ -34,6 +35,7 @@ class App:
             "handoff": HandoffScreen(self),
             "play": PlayScreen(self),
             "gameover": GameOverScreen(self),
+            "settings": SettingsScreen(self),
         }
         self.current = self.screens["menu"]
         self.sound_manager.start_music()
@@ -42,6 +44,9 @@ class App:
     def goto(self, name, **kwargs):
         self.current = self.screens[name]
         self.current.enter(**kwargs)
+
+    def open_settings(self, return_to="play"):
+        self.goto("settings", return_to=return_to)
 
     def handoff(self, lines, after):
         """Show the curtain screen; call `after()` when the player clicks."""

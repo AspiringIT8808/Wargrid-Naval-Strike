@@ -1,0 +1,4513 @@
+﻿
+===== C:\Users\michelle\Downloads\files\battleships\battleships\main.py =====
+
+"""Start the game:   py main.py"""
+from ui.app import App
+
+if __name__ == "__main__":
+    App().run()
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\README.md =====
+
+# WARGRID: Naval Strike
+
+A tactical Battleship game built with Python and Pygame.
+
+**WARGRID: Naval Strike** expands the classic Battleship formula with a 15Ã—15 battlefield, ship-specific abilities, optional tactical mechanics, multiple AI difficulties, local two-player play, and a dedicated Pygame interface.
+
+---
+
+## Features
+
+* 15Ã—15 tactical game board
+* Player vs Computer
+* 2-player local hot-seat mode
+* Three computer difficulty levels:
+
+  * Beginner
+  * Intermediate
+  * Expert
+* Five ships with unique abilities
+* Optional:
+
+  * Bomb
+  * Repair
+  * Shield
+* Fleet deployment with manual placement
+* Random fleet deployment
+* Ship relocation
+* Recon and row scanning
+* Submarine stealth
+* Turn-based attack system
+* Battle log
+* Fleet status display
+* Background music
+* In-game mute control
+* Separate game rules and UI layers
+
+---
+
+# Requirements
+
+## Python Version
+
+This project is developed and tested with:
+
+```text
+Python 3.12
+```
+
+**Python 3.14 is not recommended for this project** because Pygame may not yet provide a compatible package for every Python 3.14/platform combination. This can cause `pip install pygame` to fail.
+
+For the most reliable setup, use **Python 3.12**.
+
+---
+
+## Dependencies
+
+The project currently requires:
+
+```text
+pygame
+```
+
+All Python dependencies are listed in:
+
+```text
+requirements.txt
+```
+
+Install them with:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+Using `python -m pip` is recommended instead of calling `pip` directly because it makes it clearer which Python installation is receiving the package.
+
+---
+
+# Installation
+
+## 1. Check Your Python Version
+
+Run:
+
+```bash
+python --version
+```
+
+You should see something similar to:
+
+```text
+Python 3.12.x
+```
+
+On Windows, you can also use:
+
+```bash
+py --version
+```
+
+---
+
+## 2. Create a Virtual Environment
+
+Creating a virtual environment is recommended so that the project's packages do not interfere with other Python projects.
+
+On Windows:
+
+```bash
+py -3.12 -m venv .venv
+```
+
+Activate it:
+
+```bash
+.venv\Scripts\activate
+```
+
+After activation, your terminal should show something similar to:
+
+```text
+(.venv)
+```
+
+---
+
+## 3. Install Dependencies
+
+With the virtual environment activated:
+
+```bash
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+---
+
+## 4. Run the Game
+
+```bash
+python main.py
+```
+
+On Windows, this also works when Python 3.12 is installed:
+
+```bash
+py -3.12 main.py
+```
+
+---
+
+# If Pygame Will Not Install
+
+If you see an error while running:
+
+```bash
+python -m pip install pygame
+```
+
+first check your Python version:
+
+```bash
+python --version
+```
+
+If you are using Python 3.14, install **Python 3.12** and create the project's virtual environment with it.
+
+For example:
+
+```bash
+py -3.12 -m venv .venv
+.venv\Scripts\activate
+python -m pip install -r requirements.txt
+```
+
+Then run:
+
+```bash
+python main.py
+```
+
+Do not change the project's source code to work around a Pygame installation failure until the Python/Pygame installation itself has been checked.
+
+---
+
+# How to Play
+
+## 1. Choose Game Options
+
+From the main menu you can choose:
+
+### Game Mode
+
+**PLAY VS COMPUTER**
+
+Play against the selected AI difficulty.
+
+**2 PLAYERS - ONE SCREEN**
+
+Play locally against another player using the same computer.
+
+A handoff screen is used between players so each player can deploy and play without immediately exposing the other player's board.
+
+---
+
+## 2. Choose AI Difficulty
+
+When playing against the computer, select one of:
+
+### Beginner
+
+The computer fires at random legal cells.
+
+It does not:
+
+* Hunt damaged ships
+* Follow up on hits
+* Read scan information
+* Use ship abilities
+
+This is the simplest opponent.
+
+### Intermediate
+
+The computer introduces basic tactical behavior.
+
+It can:
+
+* Follow up on successful hits
+* Hunt damaged ships
+* Use checkerboard-style searching when hunting is not active
+* Use Frigate Barrage strategically
+* Use Submarine Stealth when its fleet is taking damage
+
+It does not make full strategic use of every ship ability.
+
+### Expert
+
+The computer uses the complete tactical system.
+
+It can make use of:
+
+* Hit tracking
+* Shield-block information
+* Scan information
+* Hit-line targeting
+* Probability-density targeting
+* Barrage
+* Relocate
+* Recon
+* Row Scan
+* Stealth
+* Repair
+* Shield
+
+The Expert AI also considers remaining ship sizes when calculating likely target locations.
+
+---
+
+# Fleet
+
+Each player controls five ships.
+
+| Ship      | Size | Ability        | Uses |
+| --------- | ---: | -------------- | ---: |
+| Frigate   |    5 | Barrage Attack |    3 |
+| Destroyer |    3 | Relocate       |    1 |
+| Carrier   |    3 | Recon          |    2 |
+| Cruiser   |    2 | Row Scan       |    2 |
+| Submarine |    2 | Stealth        |    1 |
+
+A ship is sunk when every segment belonging to it has been damaged.
+
+A player loses when their entire fleet has been sunk.
+
+---
+
+# Ship Abilities
+
+## Frigate â€” BARRAGE ATTACK
+
+The Frigate replaces its normal attack with a barrage.
+
+The player receives:
+
+```text
+4 attacks
+```
+
+during that turn.
+
+Each attack is resolved normally.
+
+**Uses:** 3
+
+---
+
+## Destroyer â€” RELOCATE
+
+The Destroyer can move to a new legal position on its own board.
+
+The new position must:
+
+* Remain inside the board
+* Preserve the Destroyer's size
+* Not overlap another ship
+* Not occupy the Bomb cell
+* Be different from its current position
+* Not contain cells already fired upon by the opponent
+
+The Destroyer's existing damage and shields remain attached to the ship when it moves.
+
+**Uses:** 1
+
+---
+
+## Carrier â€” RECON
+
+The Carrier scans a 3Ã—3 area centered around a selected enemy cell.
+
+The scan reveals whether cells contain ships but does not damage them.
+
+Areas extending beyond the board are clipped to the board.
+
+**Uses:** 2
+
+---
+
+## Cruiser â€” ROW SCAN
+
+The Cruiser scans an entire row of the enemy board.
+
+The player selects a row from 1 to 15.
+
+All cells in that row are revealed through the game's scan information system.
+
+**Uses:** 2
+
+---
+
+## Submarine â€” STEALTH
+
+The Submarine becomes untargetable for three enemy turns.
+
+During Stealth:
+
+* Attacks against the Submarine do not damage it.
+* The Submarine's player still receives one attack when Stealth is activated.
+
+This is the exception to the normal rule that a turn uses either an attack or an ability.
+
+**Uses:** 1
+
+---
+
+# Optional Mechanics
+
+The main menu allows the following mechanics to be enabled or disabled independently.
+
+* Bomb
+* Repair
+* Shield
+
+---
+
+## Bomb
+
+The Bomb is placed during fleet deployment.
+
+It can only be placed on open water.
+
+The Bomb is a hidden trap rather than a direct attack.
+
+If the opponent fires at the Bomb:
+
+1. The Bomb is triggered.
+2. The Bomb is removed.
+3. The attacker's healthiest surviving ship is selected.
+4. One undamaged segment is damaged.
+5. Shields do not protect that segment.
+
+If multiple surviving ships have the same highest HP, one is selected randomly.
+
+---
+
+## Repair
+
+Repair allows a player to restore one damaged segment belonging to a ship that is still afloat.
+
+The repaired segment:
+
+* Is removed from the ship's damaged segments
+* Can be attacked again
+* Has its previous recorded hit removed from the board's shot history
+
+**Default uses:** 3
+
+---
+
+## Shield
+
+Shield protects one undamaged ship segment.
+
+When that segment is attacked:
+
+1. The shield is consumed.
+2. The segment is not damaged.
+3. The attack is recorded as blocked.
+
+A blocked cell can be targeted again because the shield has already been consumed.
+
+**Default uses:** 3
+
+---
+
+# Board
+
+Each player has a:
+
+```text
+15 Ã— 15
+```
+
+board.
+
+Columns use letters:
+
+```text
+A B C D E F G H I J K L M N O
+```
+
+Rows use numbers:
+
+```text
+1â€“15
+```
+
+Examples of valid coordinates:
+
+```text
+A1
+H7
+O15
+```
+
+Ships occupy consecutive horizontal or vertical cells.
+
+Ships are allowed to touch one another, including diagonally.
+
+---
+
+# Fleet Deployment
+
+Before the battle begins, each player places all five ships.
+
+Ships can be:
+
+* Placed manually
+* Rotated
+* Picked up and repositioned
+* Randomized using **RANDOMIZE ALL**
+
+Rotation can be performed with:
+
+```text
+R
+```
+
+or:
+
+```text
+Right Mouse Button
+```
+
+The player can select a placed ship to pick it up and move it.
+
+If Bomb is enabled, a Bomb must also be placed on an open-water cell before the fleet can be marked ready.
+
+---
+
+# Turn System
+
+Players alternate turns.
+
+A normal turn gives the player:
+
+```text
+1 attack
+```
+
+Normally, an action is either:
+
+```text
+Attack
+```
+
+or:
+
+```text
+Use one ability
+```
+
+The main exceptions are:
+
+### Frigate
+
+Barrage gives:
+
+```text
+4 attacks
+```
+
+### Submarine
+
+Stealth gives:
+
+```text
+Stealth + 1 attack
+```
+
+At the start of a player's turn:
+
+* Their attack count is reset.
+* Ability cooldowns are updated.
+* Their active Stealth duration is updated.
+
+The game checks for victory after actions.
+
+If an entire fleet has been sunk, the game ends immediately.
+
+---
+
+# Attack Results
+
+A normal attack can produce several outcomes.
+
+### Miss
+
+The selected cell contains no ship.
+
+### Hit
+
+The selected cell contains an active ship segment.
+
+The segment becomes damaged.
+
+### Shield Block
+
+The selected cell contains a shielded ship segment.
+
+The shield is consumed, but the segment is not damaged.
+
+### Stealth
+
+The targeted ship is currently stealthed.
+
+The attack does not damage the ship.
+
+### Bomb
+
+The selected cell contains a hidden Bomb.
+
+The Bomb is triggered and damages the attacker's own healthiest surviving ship.
+
+---
+
+# Project Architecture
+
+The project separates game logic from the Pygame interface.
+
+The central rule is:
+
+> **`rules/` decides. `ui/` shows.**
+
+The UI should not directly modify ships, boards, or game state.
+
+Instead, UI screens call methods on `Game`, such as:
+
+```python
+game.attack(...)
+game.use_ability(...)
+game.use_repair(...)
+game.use_shield(...)
+```
+
+The rules layer resolves the action and returns the result.
+
+This keeps the game logic independent from the visual interface.
+
+---
+
+# Project Structure
+
+```text
+battleships/
+â”‚
+â”œâ”€â”€ main.py
+â”œâ”€â”€ README.md
+â”œâ”€â”€ requirements.txt
+â”‚
+â”œâ”€â”€ audio/
+â”‚   â”œâ”€â”€ music.py
+â”‚   â”œâ”€â”€ sfx.py
+â”‚   â””â”€â”€ sound_manager.py
+â”‚
+â”œâ”€â”€ docs/
+â”‚   â””â”€â”€ rules.md
+â”‚
+â”œâ”€â”€ rules/
+â”‚   â”œâ”€â”€ __init__.py
+â”‚   â”œâ”€â”€ config.py
+â”‚   â”œâ”€â”€ grid.py
+â”‚   â”œâ”€â”€ abilities.py
+â”‚   â”œâ”€â”€ ship.py
+â”‚   â”œâ”€â”€ board.py
+â”‚   â”œâ”€â”€ extras.py
+â”‚   â”œâ”€â”€ game.py
+â”‚   â”‚
+â”‚   â”œâ”€â”€ ai.py
+â”‚   â”œâ”€â”€ ai_beginner.py
+â”‚   â”œâ”€â”€ ai_intermediate.py
+â”‚   â””â”€â”€ ai_expert.py
+â”‚
+â”œâ”€â”€ settings/
+â”‚   â””â”€â”€ settings.py
+â”‚
+â””â”€â”€ ui/
+    â”œâ”€â”€ __init__.py
+    â”œâ”€â”€ app.py
+    â”œâ”€â”€ display.py
+    â”œâ”€â”€ theme.py
+    â”œâ”€â”€ layout.py
+    â”œâ”€â”€ widgets.py
+    â”œâ”€â”€ board_view.py
+    â”œâ”€â”€ panels.py
+    â”‚
+    â””â”€â”€ screens/
+        â”œâ”€â”€ __init__.py
+        â”œâ”€â”€ base.py
+        â”œâ”€â”€ menu.py
+        â”œâ”€â”€ setup.py
+        â”œâ”€â”€ handoff.py
+        â”œâ”€â”€ play.py
+        â””â”€â”€ gameover.py
+```
+
+---
+
+# What Each Part Does
+
+## `main.py`
+
+Application entry point.
+
+It creates the Pygame application and starts the main loop.
+
+---
+
+## `rules/config.py`
+
+Central configuration and balancing file.
+
+Contains:
+
+* Board size
+* Ship sizes
+* Ability names
+* Ability uses
+* Ability cooldowns
+* Recon size
+* Stealth duration
+* Repair uses
+* Shield uses
+
+If you want to rebalance the game, this is usually the first place to look.
+
+---
+
+## `rules/grid.py`
+
+Grid-related helpers.
+
+Handles operations such as:
+
+* Checking board boundaries
+* Converting coordinates to names
+* Creating horizontal/vertical ship lines
+* Creating scan areas
+
+---
+
+## `rules/abilities.py`
+
+Contains the shared ability system and the actual implementation of:
+
+* Barrage Attack
+* Relocate
+* Recon
+* Row Scan
+* Stealth
+
+---
+
+## `rules/ship.py`
+
+Defines the `Ship` object.
+
+Tracks:
+
+* Ship name
+* Size
+* Occupied cells
+* Damaged segments
+* Shielded segments
+* Stealth duration
+* Ability state
+* Remaining HP
+
+---
+
+## `rules/board.py`
+
+Defines a player's board.
+
+Handles:
+
+* Ship placement
+* Ship removal
+* Bomb placement
+* Incoming attacks
+* Hit/miss resolution
+* Shield blocks
+* Stealth interactions
+* Scans
+* Relocation validation
+* Repairable cells
+* Shieldable cells
+* Fleet-sunk detection
+
+---
+
+## `rules/extras.py`
+
+Contains optional mechanics:
+
+* Bomb
+* Repair
+* Shield
+
+---
+
+## `rules/game.py`
+
+Controls the overall game state.
+
+Handles:
+
+* Current player
+* Turns
+* Attacks
+* Ability usage
+* Repair
+* Shield
+* Victory detection
+* Action logs
+* Player names
+* Game options
+* AI difficulty
+
+This is the main rules-level interface used by the UI.
+
+---
+
+# AI Architecture
+
+The computer opponent is split into separate difficulty modules.
+
+```text
+rules/ai.py
+      â”‚
+      â”œâ”€â”€ ai_beginner.py
+      â”œâ”€â”€ ai_intermediate.py
+      â””â”€â”€ ai_expert.py
+```
+
+`rules/ai.py` acts as the dispatcher.
+
+The rest of the application can continue calling:
+
+```python
+ai_step(game)
+```
+
+without needing to know which difficulty implementation is active.
+
+---
+
+# UI Architecture
+
+The Pygame interface is organized into screens.
+
+```text
+App
+ â”‚
+ â”œâ”€â”€ MenuScreen
+ â”‚
+ â”œâ”€â”€ SetupScreen
+ â”‚
+ â”œâ”€â”€ HandoffScreen
+ â”‚
+ â”œâ”€â”€ PlayScreen
+ â”‚
+ â””â”€â”€ GameOverScreen
+```
+
+Each screen has the standard lifecycle:
+
+```text
+enter()
+on_event()
+update()
+draw()
+```
+
+`ui/app.py` owns the shared application state and controls screen switching.
+
+---
+
+# Audio
+
+Audio is managed separately from the game rules.
+
+```text
+audio/
+â”œâ”€â”€ music.py
+â”œâ”€â”€ sfx.py
+â””â”€â”€ sound_manager.py
+```
+
+The current audio system provides:
+
+* Background music
+* Music looping
+* Mute/unmute control
+* Music cleanup when the application closes
+
+`SoundManager` provides the interface used by the Pygame application.
+
+---
+
+# Documentation
+
+The project documentation is divided into two main levels.
+
+## `README.md`
+
+This file provides:
+
+* Project overview
+* Installation
+* Running instructions
+* Gameplay overview
+* Architecture
+* Project structure
+* Development guidance
+
+## `docs/rules.md`
+
+Contains the detailed rules reference.
+
+Use it when you need the exact behavior of:
+
+* Attacks
+* Ships
+* Abilities
+* Optional mechanics
+* Turns
+* Deployment
+* AI
+* Victory conditions
+
+---
+
+# "Where Do I Change...?"
+
+| I want to...                              | Go to                                                                               |
+| ----------------------------------------- | ----------------------------------------------------------------------------------- |
+| Change the board size                     | `rules/config.py`                                                                   |
+| Change ship sizes                         | `rules/config.py`                                                                   |
+| Change ability uses                       | `rules/config.py`                                                                   |
+| Add/change ability cooldowns              | `rules/config.py`                                                                   |
+| Change Recon size                         | `rules/config.py`                                                                   |
+| Change Stealth duration                   | `rules/config.py`                                                                   |
+| Change Repair uses                        | `rules/config.py`                                                                   |
+| Change Shield uses                        | `rules/config.py`                                                                   |
+| Change what Barrage does                  | `rules/abilities.py`                                                                |
+| Change what Relocate does                 | `rules/abilities.py`                                                                |
+| Change what Recon does                    | `rules/abilities.py`                                                                |
+| Change what Row Scan does                 | `rules/abilities.py`                                                                |
+| Change what Stealth does                  | `rules/abilities.py`                                                                |
+| Add a new ship ability                    | `rules/config.py` + `rules/abilities.py` + `rules/game.py`/UI integration as needed |
+| Change Bomb behavior                      | `rules/extras.py`                                                                   |
+| Change Repair behavior                    | `rules/extras.py`                                                                   |
+| Change Shield behavior                    | `rules/extras.py`                                                                   |
+| Change hit/miss/stealth/shield resolution | `rules/board.py` â†’ `receive_attack()`                                               |
+| Change ship placement rules               | `rules/board.py`                                                                    |
+| Change Relocate validation                | `rules/board.py` â†’ `check_move()`                                                   |
+| Change turn flow                          | `rules/game.py`                                                                     |
+| Change attack count behavior              | `rules/game.py` and `rules/abilities.py`                                            |
+| Change victory detection                  | `rules/game.py` / `rules/board.py`                                                  |
+| Change Beginner AI                        | `rules/ai_beginner.py`                                                              |
+| Change Intermediate AI                    | `rules/ai_intermediate.py`                                                          |
+| Change Expert AI                          | `rules/ai_expert.py`                                                                |
+| Change which AI difficulty is selected    | `rules/ai.py` / `ui/app.py`                                                         |
+| Change default AI difficulty              | `ui/app.py`                                                                         |
+| Change default optional mechanics         | `ui/app.py`                                                                         |
+| Change game modes                         | `ui/app.py` / `ui/screens/menu.py`                                                  |
+| Change deployment behavior                | `ui/screens/setup.py`                                                               |
+| Change the battle screen                  | `ui/screens/play.py`                                                                |
+| Change the game-over screen               | `ui/screens/gameover.py`                                                            |
+| Change the handoff screen                 | `ui/screens/handoff.py`                                                             |
+| Change screen navigation                  | `ui/app.py`                                                                         |
+| Change colors                             | `ui/theme.py`                                                                       |
+| Change fonts                              | `ui/theme.py`                                                                       |
+| Move UI elements                          | `ui/layout.py` and the relevant screen                                              |
+| Change board appearance                   | `ui/board_view.py`                                                                  |
+| Change fleet-status panels                | `ui/panels.py`                                                                      |
+| Change buttons/widgets                    | `ui/widgets.py`                                                                     |
+| Change window/display settings            | `ui/display.py`                                                                     |
+| Change background music behavior          | `audio/music.py`                                                                    |
+| Change audio integration                  | `audio/sound_manager.py`                                                            |
+| Add sound effects                         | `audio/sfx.py` + audio integration                                                  |
+| Change general settings                   | `settings/settings.py`                                                              |
+
+---
+
+# Development Rule of Thumb
+
+When changing the game, ask:
+
+### Is this a rule?
+
+Put it in:
+
+```text
+rules/
+```
+
+### Is this visual or input behavior?
+
+Put it in:
+
+```text
+ui/
+```
+
+### Is this audio behavior?
+
+Put it in:
+
+```text
+audio/
+```
+
+### Is this a tunable number?
+
+Put it in:
+
+```text
+rules/config.py
+```
+
+Avoid putting game rules directly into Pygame screen code.
+
+---
+
+# Design Philosophy
+
+WARGRID is structured around a separation between:
+
+```text
+GAME LOGIC
+    â†“
+rules/
+    â†“
+GAME STATE
+    â†“
+ui/
+    â†“
+VISUAL PRESENTATION
+```
+
+The goal is for the rules system to be understandable and testable without depending on Pygame.
+
+The UI should present the game state and send player actions to the rules layer rather than deciding whether an action is legal.
+
+---
+
+# License
+
+No license information is currently specified in the project files.
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\requirements.txt =====
+
+pygame
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\audio\music.py =====
+
+"""Background music manager."""
+import os
+import pygame
+
+MUSIC_PATH = os.path.join(os.path.dirname(__file__), "..", "assets", "bg_music .mp3")
+
+
+class MusicPlayer:
+    def __init__(self):
+        self.muted = False
+
+    def start(self):
+        pygame.mixer.init()
+        pygame.mixer.music.load(MUSIC_PATH)
+        pygame.mixer.music.play(-1)
+
+    def stop(self):
+        pygame.mixer.music.stop()
+
+    def toggle_mute(self):
+        self.muted = not self.muted
+        pygame.mixer.music.set_volume(0.0 if self.muted else 1.0)
+        return self.muted
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\audio\sfx.py =====
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\audio\sound_manager.py =====
+
+"""Central audio manager for WARGRID: Naval Strike."""
+from audio.music import MusicPlayer
+
+
+class SoundManager:
+    def __init__(self):
+        self.music = MusicPlayer()
+
+    @property
+    def is_muted(self):
+        return self.music.muted
+
+    def start_music(self):
+        self.music.start()
+
+    def stop_music(self):
+        self.music.stop()
+
+    def toggle_mute(self):
+        return self.music.toggle_mute()
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\docs\rules.md =====
+
+# WARGRID: Naval Strike â€” Rules
+
+## 1. Game Overview
+
+**WARGRID: Naval Strike** is a tactical Battleship game played on a **15 Ã— 15 grid**.
+
+Each player commands a fleet of five ships.
+
+Players alternate turns, attacking the opposing board while using ship-specific abilities and, when enabled, the optional Bomb, Repair, and Shield mechanics.
+
+The game supports:
+
+* Player vs Computer
+* Two-player local hot-seat play
+* Beginner AI
+* Intermediate AI
+* Expert AI
+* Optional Bomb
+* Optional Repair
+* Optional Shield
+
+The objective is to **sink the opposing player's entire fleet**.
+
+---
+
+# 2. Board
+
+Each player has a:
+
+```text
+15 Ã— 15
+```
+
+grid.
+
+Columns are represented by letters:
+
+```text
+A B C D E F G H I J K L M N O
+```
+
+Rows are numbered:
+
+```text
+1â€“15
+```
+
+Example coordinates:
+
+```text
+A1
+H7
+O15
+```
+
+A board therefore contains 225 cells.
+
+Ships occupy consecutive cells horizontally or vertically.
+
+Ships **may touch one another**, including diagonally.
+
+---
+
+# 3. Fleet
+
+Each player has five ships.
+
+| Ship      | Size | Ability        | Uses |
+| --------- | ---: | -------------- | ---: |
+| Frigate   |    5 | Barrage Attack |    3 |
+| Destroyer |    3 | Relocate       |    1 |
+| Carrier   |    3 | Recon          |    2 |
+| Cruiser   |    2 | Row Scan       |    2 |
+| Submarine |    2 | Stealth        |    1 |
+
+The total fleet size is:
+
+```text
+5 + 3 + 3 + 2 + 2 = 15 segments
+```
+
+A ship is **sunk** when all of its segments are damaged.
+
+A player loses when every ship in their fleet is sunk.
+
+---
+
+# 4. Fleet Deployment
+
+Before the battle begins, each player must deploy all five ships.
+
+Ships must:
+
+* Remain inside the board
+* Occupy the correct number of cells
+* Use consecutive horizontal or vertical cells
+* Not overlap another ship
+* Not occupy the Bomb cell when Bomb is enabled
+
+Ships are allowed to touch.
+
+There is no rule requiring a gap between ships.
+
+---
+
+## 4.1 Manual Deployment
+
+The player selects a ship and clicks a starting cell.
+
+The ship is previewed in the current orientation.
+
+Orientation can be changed using:
+
+```text
+R
+```
+
+or:
+
+```text
+Right Mouse Button
+```
+
+A placed ship can be clicked again to pick it up and reposition it.
+
+---
+
+## 4.2 Random Deployment
+
+The setup screen provides:
+
+```text
+RANDOMIZE ALL
+```
+
+Random deployment generates legal positions for every ship.
+
+If Bomb is enabled, the Bomb is also placed on an open-water cell.
+
+---
+
+## 4.3 Ready State
+
+A player can only finish deployment when:
+
+* All five ships have been placed.
+* If Bomb is enabled, a Bomb has also been placed.
+
+---
+
+# 5. Normal Attacks
+
+A normal attack targets one cell on the opponent's board.
+
+The target must be a legal fireable cell.
+
+Normally, a player receives:
+
+```text
+1 attack
+```
+
+for a turn.
+
+The following results are possible.
+
+---
+
+## 5.1 Miss
+
+If the selected cell contains no ship:
+
+```text
+MISS
+```
+
+The cell is recorded as a miss.
+
+The cell cannot normally be fired at again.
+
+---
+
+## 5.2 Hit
+
+If the selected cell contains an active ship segment:
+
+```text
+HIT
+```
+
+The corresponding ship segment becomes damaged.
+
+If all segments of that ship are damaged, the ship is reported as sunk.
+
+---
+
+## 5.3 Shield Block
+
+If the selected ship segment has a shield:
+
+1. The shield is removed.
+2. The segment is not damaged.
+3. The shot is recorded as:
+
+```text
+blocked
+```
+
+Because the shield has been consumed, the same cell can be targeted again.
+
+---
+
+## 5.4 Stealth
+
+If the selected cell belongs to a ship that is currently stealthed:
+
+```text
+SUBMARINE DETECTED - no damage
+```
+
+The attack does not damage the ship.
+
+The stealth state remains active until its duration expires.
+
+---
+
+## 5.5 Bomb
+
+If the selected cell contains a hidden Bomb:
+
+1. The Bomb is triggered.
+2. The Bomb is removed.
+3. The attacker's own fleet is damaged.
+
+The Bomb therefore does not damage the board being fired upon.
+
+---
+
+# 6. Ship Abilities
+
+Each ship has one unique ability.
+
+Ability uses are tracked separately for each ship.
+
+An ability is available only when:
+
+* The ship is still operational.
+* The ability has remaining uses.
+* Its cooldown, if configured, has expired.
+
+The current configuration uses limited total uses and zero cooldown for all five abilities.
+
+The shared ability system supports cooldowns, so this can be changed in `rules/config.py`.
+
+---
+
+# 7. Frigate â€” BARRAGE ATTACK
+
+The Frigate can replace its normal attack with a four-shot barrage.
+
+When activated:
+
+```text
+attacks_left = 4
+```
+
+The player may therefore make four attacks during that turn.
+
+Each attack is independently resolved.
+
+Possible results include:
+
+* Miss
+* Hit
+* Shield block
+* Stealth
+* Bomb
+
+The ability consumes one Frigate use.
+
+**Uses:** 3
+
+### Important
+
+Barrage currently gives **four attacks**, not two.
+
+The four attacks are implemented directly by the game rules.
+
+---
+
+# 8. Destroyer â€” RELOCATE
+
+The Destroyer can move to a new position on its own board.
+
+The new position must:
+
+* Contain exactly three cells
+* Remain inside the board
+* Be horizontal or vertical
+* Not overlap another ship
+* Not occupy the Bomb cell
+* Be different from the current position
+* Not contain cells that have already been fired upon by the opponent
+
+The Destroyer's current damage remains attached to the ship.
+
+Its shields also remain attached to their corresponding ship segments.
+
+Therefore, relocation moves the ship rather than creating a new undamaged Destroyer.
+
+**Uses:** 1
+
+---
+
+# 9. Carrier â€” RECON
+
+The Carrier can scan an area of the enemy board.
+
+The current configuration is:
+
+```text
+RECON_SIZE = 3
+```
+
+Therefore, Recon scans a:
+
+```text
+3 Ã— 3
+```
+
+area centered on the selected cell.
+
+The scan does not directly damage ships.
+
+Instead, each scanned cell records whether a ship was present at the time of the scan.
+
+Areas extending beyond the edge of the board are clipped to valid board cells.
+
+**Uses:** 2
+
+---
+
+# 10. Cruiser â€” ROW SCAN
+
+The Cruiser can scan an entire enemy row.
+
+The player selects a row from:
+
+```text
+1â€“15
+```
+
+All cells in that row are scanned.
+
+The scan records whether each cell contained a ship at the time it was scanned.
+
+The scan does not directly damage ships.
+
+**Uses:** 2
+
+---
+
+# 11. Submarine â€” STEALTH
+
+The Submarine can temporarily become untargetable.
+
+When activated:
+
+```text
+STEALTH_ROUNDS = 3
+```
+
+The Submarine cannot be damaged by attacks while its stealth duration is active.
+
+Stealth lasts for **three enemy turns**.
+
+The Submarine also receives one attack during the turn in which Stealth is activated.
+
+Therefore:
+
+```text
+Stealth
+    +
+1 attack
+```
+
+is possible in the same turn.
+
+This is the only ability that explicitly provides an attack in addition to the ability.
+
+**Uses:** 1
+
+---
+
+# 12. Repair
+
+Repair is an optional mechanic.
+
+It can be enabled or disabled from the main menu.
+
+When enabled, a player may repair one damaged segment belonging to a ship that has not yet sunk.
+
+The selected cell must:
+
+* Belong to a ship
+* Be damaged
+* Belong to a ship that is still afloat
+
+When repaired:
+
+1. The segment is removed from the ship's damaged set.
+2. The corresponding `"hit"` entry is removed from the board's shot history.
+3. The opponent can therefore fire at the cell again.
+
+The repaired segment is not permanently protected.
+
+It can be damaged again by a future attack.
+
+**Default uses:** 3
+
+---
+
+# 13. Shield
+
+Shield is an optional mechanic.
+
+It can be enabled or disabled from the main menu.
+
+A Shield can be placed on an undamaged ship segment.
+
+The selected cell must:
+
+* Belong to a ship
+* Not already be damaged
+* Not already have a shield
+* Belong to a ship that is still afloat
+
+When the protected segment is attacked:
+
+1. The shield is consumed.
+2. The segment remains undamaged.
+3. The shot is recorded as blocked.
+
+Because the shield is consumed, the attacker may target the cell again.
+
+**Default uses:** 3
+
+---
+
+# 14. Bomb
+
+Bomb is an optional mechanic.
+
+It can be enabled or disabled from the main menu.
+
+The Bomb is placed during deployment.
+
+The Bomb must:
+
+* Be inside the board
+* Be placed on open water
+* Not occupy a ship's cell
+
+The Bomb remains hidden from the opponent.
+
+When the opponent fires at the Bomb:
+
+1. The Bomb triggers.
+2. The Bomb is removed.
+3. The attacker's surviving ships are examined.
+4. The ship with the highest remaining HP is selected.
+5. One currently undamaged segment is selected.
+6. That segment takes one damage.
+7. Any shield on that segment is removed/ignored.
+
+If multiple surviving ships have the same highest HP, the affected ship is selected randomly.
+
+The Bomb can therefore damage the attacker even though the attack was made against an apparently empty enemy cell.
+
+---
+
+# 15. Turn System
+
+Players alternate turns.
+
+At the beginning of each turn:
+
+1. The player's `attacks_left` value is reset.
+2. Ability cooldowns are updated.
+3. Active Stealth durations for the current player's ships are updated.
+
+A normal attack starts a one-shot turn if no special ability has already assigned additional attacks.
+
+---
+
+## 15.1 Normal Turn
+
+A normal turn provides:
+
+```text
+1 attack
+```
+
+The player fires once.
+
+The turn then passes to the opponent unless the game has ended.
+
+---
+
+## 15.2 Barrage Turn
+
+When the Frigate uses Barrage:
+
+```text
+4 attacks
+```
+
+remain available.
+
+The player can continue attacking until all four attacks have been used.
+
+The turn ends after the final attack unless the game ends earlier.
+
+---
+
+## 15.3 Stealth Turn
+
+When the Submarine uses Stealth:
+
+```text
+Stealth activated
++
+1 attack
+```
+
+The player can immediately make one attack.
+
+After that attack, the turn ends unless the game has already ended.
+
+---
+
+## 15.4 Other Abilities
+
+Recon, Row Scan, and Relocate consume the player's action.
+
+The turn ends after the ability resolves.
+
+Repair and Shield also consume the player's action.
+
+The general rule is:
+
+```text
+One action per turn
+```
+
+with the explicit exceptions of:
+
+```text
+Barrage â†’ 4 attacks
+Stealth â†’ Stealth + 1 attack
+```
+
+---
+
+# 16. Ability Cooldowns
+
+The ability system supports both uses and cooldowns.
+
+Each ability has:
+
+```text
+uses
+cooldown
+```
+
+in `rules/config.py`.
+
+Current configuration:
+
+| Ship      | Uses | Cooldown |
+| --------- | ---: | -------: |
+| Frigate   |    3 |        0 |
+| Destroyer |    1 |        0 |
+| Carrier   |    2 |        0 |
+| Cruiser   |    2 |        0 |
+| Submarine |    1 |        0 |
+
+A cooldown of zero means the ability does not wait for a future turn after being used.
+
+The `Ability` class supports cooldowns if they are introduced later.
+
+---
+
+# 17. Victory
+
+A player wins when the opponent's entire fleet is sunk.
+
+The game checks the fleets after actions.
+
+If all ships belonging to one player are sunk:
+
+```text
+winner
+```
+
+is set immediately.
+
+The game does not continue to another turn after the fleet has been completely destroyed.
+
+---
+
+# 18. Two-Player Hot-Seat Mode
+
+Two-player mode uses the same computer for both players.
+
+The setup flow is:
+
+```text
+Player 1 deployment
+        â†“
+Handoff
+        â†“
+Player 2 deployment
+        â†“
+Handoff
+        â†“
+Player 1 starts
+```
+
+During the battle, players alternate turns.
+
+The handoff screen is used to prevent the next player from immediately seeing information belonging to the previous player.
+
+---
+
+# 19. Player vs Computer Mode
+
+When playing against the computer:
+
+1. The human player deploys their fleet.
+2. The computer automatically receives a randomized legal fleet.
+3. Player 1 begins the battle.
+
+The selected AI difficulty determines which computer module controls the opponent.
+
+---
+
+# 20. AI System
+
+The AI is divided into three implementations.
+
+```text
+rules/ai.py
+        â”‚
+        â”œâ”€â”€ ai_beginner.py
+        â”œâ”€â”€ ai_intermediate.py
+        â””â”€â”€ ai_expert.py
+```
+
+`rules/ai.py` selects the appropriate implementation based on:
+
+```python
+game.difficulty
+```
+
+Supported values:
+
+```text
+beginner
+intermediate
+expert
+```
+
+The default difficulty is:
+
+```text
+intermediate
+```
+
+---
+
+# 21. Beginner AI
+
+The Beginner AI selects a random legal cell.
+
+It does not:
+
+* Hunt damaged ships
+* Follow up on hits
+* Read scan information
+* Use ship abilities
+
+Its core behavior is:
+
+```text
+Find legal cells
+        â†“
+Choose one randomly
+        â†“
+Attack
+```
+
+---
+
+# 22. Intermediate AI
+
+The Intermediate AI introduces basic tactical behavior.
+
+It maintains a hunt/target system.
+
+If a previous attack has:
+
+* Hit an unsunk ship, or
+* Been blocked by a shield
+
+the AI prioritizes relevant nearby cells.
+
+If there are no immediate targets, it uses a checkerboard-style search pattern where possible.
+
+The Intermediate AI can also use:
+
+### Frigate
+
+Barrage is more likely to be used when the AI already has a target to chase.
+
+### Submarine
+
+Stealth becomes more likely when the AI's own fleet has multiple damaged ships.
+
+The Intermediate AI does not strategically use every ability.
+
+---
+
+# 23. Expert AI
+
+The Expert AI uses a more complete tactical system.
+
+Its targeting priorities include:
+
+1. A cell whose shield has just blocked an attack
+2. A ship location revealed by Recon or Row Scan
+3. Confirmed hits that can be extended into a line
+4. Probability-density targeting
+5. Random legal targeting as a fallback
+
+---
+
+## 23.1 Shield-Block Targeting
+
+When a shield blocks a shot, the AI knows that:
+
+* A ship is present
+* The shield has already been consumed
+
+The blocked cell becomes a high-priority target.
+
+---
+
+## 23.2 Scan Targeting
+
+If Recon or Row Scan has revealed that a ship is present in a cell, the AI can prioritize that cell.
+
+---
+
+## 23.3 Hit-Line Targeting
+
+When multiple unsunk hits belong to the same ship and form a horizontal or vertical line, the Expert AI attempts to extend that line toward the ship's remaining cells.
+
+---
+
+## 23.4 Probability-Density Targeting
+
+When there is no immediate target, the Expert AI builds a probability map.
+
+It considers:
+
+* Remaining ship sizes
+* Known misses
+* Known Bomb cells
+* Cells that can still legally be fired upon
+* Possible horizontal ship placements
+* Possible vertical ship placements
+
+Each possible placement contributes to the score of the cells it covers.
+
+The AI then targets cells with the highest resulting score.
+
+---
+
+# 24. Expert AI Abilities
+
+The Expert AI can use the fleet's abilities strategically.
+
+---
+
+## 24.1 Frigate
+
+Barrage is prioritized when the AI is actively chasing a target.
+
+The additional attacks are used to capitalize on information the AI already has.
+
+---
+
+## 24.2 Destroyer
+
+The Expert AI can relocate a damaged Destroyer.
+
+It searches for a legal location that:
+
+* Preserves ship size
+* Avoids overlap
+* Avoids the Bomb
+* Avoids cells already fired upon
+
+The purpose is to move a known damaged ship away from exposed cells.
+
+---
+
+## 24.3 Carrier
+
+Recon is considered when there is no active target.
+
+The Expert AI chooses a scan center using its probability-density information.
+
+---
+
+## 24.4 Cruiser
+
+Row Scan is considered when there is no active target.
+
+The AI chooses a row using the probability information available to it.
+
+---
+
+## 24.5 Submarine
+
+Stealth becomes more likely when the AI's own fleet has multiple damaged ships.
+
+The AI can therefore protect its Submarine while still receiving one attack during the Stealth turn.
+
+---
+
+## 24.6 Repair
+
+The Expert AI can use Repair when it has no active hunt.
+
+It selects a damaged cell from a surviving ship.
+
+The largest damaged ship is prioritized.
+
+---
+
+## 24.7 Shield
+
+The Expert AI can use Shield when it has no active hunt.
+
+It selects an undamaged, unshielded cell from a surviving ship.
+
+The largest available ship is prioritized.
+
+---
+
+# 25. Game State
+
+The central game object is:
+
+```python
+rules.game.Game
+```
+
+It owns the overall match state.
+
+Important state includes:
+
+```text
+options
+boards
+names
+current player
+attacks_left
+winner
+difficulty
+log
+turn_log
+last_turn_log
+```
+
+The two player boards are stored in:
+
+```python
+game.boards
+```
+
+The active player's board is exposed through:
+
+```python
+game.me
+```
+
+The opponent's board is exposed through:
+
+```python
+game.foe
+```
+
+---
+
+# 26. Action Interface
+
+The UI communicates with the rules system primarily through:
+
+```python
+game.attack(cell)
+game.use_ability(ship_name, target)
+game.use_repair(cell)
+game.use_shield(cell)
+```
+
+Each action returns:
+
+```text
+(ok, text)
+```
+
+where:
+
+* `ok = False` means the action was rejected.
+* `ok = True` means the action was applied.
+* `text` describes the result.
+
+Invalid actions do not modify the game state.
+
+---
+
+# 27. Board State
+
+Each `Board` tracks:
+
+```text
+ships
+shots
+scanned
+bomb
+repairs_left
+shields_left
+```
+
+### `ships`
+
+The player's fleet.
+
+### `shots`
+
+Cells that have been fired upon.
+
+Possible values include:
+
+```text
+hit
+miss
+blocked
+bomb
+```
+
+### `scanned`
+
+Cells whose ship presence has been revealed through Recon or Row Scan.
+
+### `bomb`
+
+The current hidden Bomb cell, if Bomb is enabled.
+
+### `repairs_left`
+
+Remaining Repair uses.
+
+### `shields_left`
+
+Remaining Shield uses.
+
+---
+
+# 28. Ship State
+
+Each ship tracks:
+
+```text
+name
+size
+cells
+hit
+shield
+stealth_left
+ability
+```
+
+The ship's remaining HP is calculated as:
+
+```text
+size - number of damaged segments
+```
+
+A ship is sunk when its HP reaches zero.
+
+---
+
+# 29. Configuration
+
+Most balancing values are centralized in:
+
+```text
+rules/config.py
+```
+
+Current values:
+
+```python
+GRID = 15
+
+RECON_SIZE = 3
+STEALTH_ROUNDS = 3
+
+REPAIR_USES = 3
+SHIELD_USES = 3
+```
+
+Current fleet configuration:
+
+```text
+Frigate     size 5   Barrage Attack   3 uses
+Destroyer   size 3   Relocate         1 use
+Carrier     size 3   Recon            2 uses
+Cruiser     size 2   Row Scan         2 uses
+Submarine   size 2   Stealth          1 use
+```
+
+---
+
+# 30. Optional Mechanics Configuration
+
+The main application currently starts with:
+
+```python
+{
+    "bomb": True,
+    "repair": True,
+    "shield": True
+}
+```
+
+Each mechanic can then be toggled from the main menu.
+
+The selected options are passed into the `Game`.
+
+---
+
+# 31. Architecture
+
+The project follows a separation between rules and presentation.
+
+```text
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚       UI         â”‚
+                    â”‚      ui/         â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                             â”‚
+                             â”‚ actions
+                             â–¼
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚      Game        â”‚
+                    â”‚   rules/game.py  â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                             â”‚
+          â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+          â–¼                  â–¼                  â–¼
+     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”       â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+     â”‚  Board  â”‚       â”‚ Abilities â”‚      â”‚ Extras  â”‚
+     â”‚ board.pyâ”‚       â”‚abilities.pyâ”‚     â”‚extras.pyâ”‚
+     â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜       â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+          â”‚
+          â–¼
+      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+      â”‚  Ship   â”‚
+      â”‚ ship.py â”‚
+      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
+The guiding rule is:
+
+> **`rules/` decides, `ui/` shows.**
+
+The UI should not directly manipulate ship damage, board shots, ability uses, or victory state.
+
+It should request an action from `Game` and display the result.
+
+---
+
+# 32. File Responsibilities
+
+## `rules/config.py`
+
+Central tuning values.
+
+## `rules/grid.py`
+
+Grid coordinates and cell-generation helpers.
+
+## `rules/abilities.py`
+
+Ability bookkeeping and ability effects.
+
+## `rules/ship.py`
+
+Ship state.
+
+## `rules/board.py`
+
+Board state, placement, attacks, scans, movement validation, Repair/Shield helpers.
+
+## `rules/extras.py`
+
+Bomb, Repair, and Shield behavior.
+
+## `rules/game.py`
+
+Turn flow and public game actions.
+
+## `rules/ai.py`
+
+AI difficulty dispatcher.
+
+## `rules/ai_beginner.py`
+
+Beginner AI.
+
+## `rules/ai_intermediate.py`
+
+Intermediate AI.
+
+## `rules/ai_expert.py`
+
+Expert AI.
+
+---
+
+# 33. UI Flow
+
+The application uses the following screen flow:
+
+```text
+MENU
+  â†“
+SETUP
+  â†“
+HANDOFF (two-player mode)
+  â†“
+PLAY
+  â†“
+GAME OVER
+```
+
+The main application is managed by:
+
+```text
+ui/app.py
+```
+
+---
+
+# 34. Audio
+
+The audio system is separated from the rules system.
+
+```text
+audio/music.py
+audio/sound_manager.py
+audio/sfx.py
+```
+
+The current implementation provides background music through `MusicPlayer`.
+
+The application also provides a mute toggle.
+
+Music is started when the application starts and stopped when the application exits.
+
+---
+
+# 35. Current Default Game
+
+Unless changed from the menu, the game starts with:
+
+```text
+Board:
+15 Ã— 15
+
+Mode:
+Player vs Computer
+
+AI:
+Intermediate
+
+Bomb:
+ON
+
+Repair:
+ON
+
+Shield:
+ON
+```
+
+The default difficulty is defined by the application as:
+
+```text
+intermediate
+```
+
+---
+
+# 36. Quick Rules Reference
+
+```text
+BOARD
+15 Ã— 15
+
+FLEET
+Frigate       5
+Destroyer     3
+Carrier       3
+Cruiser       2
+Submarine     2
+
+ABILITIES
+Frigate       Barrage       4 attacks
+Destroyer     Relocate      move ship
+Carrier       Recon         3 Ã— 3 scan
+Cruiser       Row Scan      scan one row
+Submarine     Stealth       3 enemy turns + 1 attack
+
+DEFAULT USES
+Barrage       3
+Relocate      1
+Recon         2
+Row Scan      2
+Stealth       1
+
+OPTIONAL
+Bomb          1 hidden trap
+Repair        3 uses
+Shield        3 uses
+
+NORMAL TURN
+1 attack
+
+SPECIAL TURNS
+Barrage       4 attacks
+Stealth       stealth + 1 attack
+
+VICTORY
+Sink the entire enemy fleet
+```
+
+---
+
+# 37. Rule of the House
+
+When modifying the project:
+
+> **Put game rules in `rules/`. Put presentation in `ui/`.**
+
+If a change determines **what is legal, what happens, how damage works, how turns work, or how the AI decides**, it belongs in the rules layer.
+
+If a change determines **what the player sees, clicks, hears, or how the interface is arranged**, it belongs in the UI/audio layer.
+
+For balance changes, start with:
+
+```text
+rules/config.py
+```
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\rules\abilities.py =====
+
+"""
+SHIP ABILITIES.
+
+Ability         = the uses / cooldown bookkeeping that every ship ability shares.
+ABILITY_EFFECTS = what each ability actually DOES. One small function per ability,
+                  so each one can be read (or changed) on its own.
+
+An effect function receives (game, ship, target) and returns (error, log_text):
+  * error is a string if the action is invalid (nothing must have changed), else None
+  * log_text is the sentence for the log, e.g. "uses RECON around C5"
+Game.use_ability() takes care of spending the use and ending the turn.
+"""
+from rules.config import GRID, RECON_SIZE, STEALTH_ROUNDS
+from rules.grid import area_cells, cell_name, in_bounds
+
+
+class Ability:
+    def __init__(self, spec):
+        self.key = spec["key"]
+        self.label = spec["label"]
+        self.uses_left = spec["uses"]
+        self.cooldown = spec["cooldown"]
+        self.cooldown_left = 0
+
+    @property
+    def ready(self):
+        return self.cooldown_left == 0 and (self.uses_left is None or self.uses_left > 0)
+
+    def spend(self):
+        if self.uses_left is not None:
+            self.uses_left -= 1
+        self.cooldown_left = self.cooldown
+
+    def tick(self):                       # called at the start of the owner's turn
+        self.cooldown_left = max(0, self.cooldown_left - 1)
+
+
+# ----- the effects -----------------------------------------------------------
+def barrage_attacks(game, ship, target):
+    """Frigate. The ability REPLACES the normal attack: two shots instead of one."""
+    game.attacks_left = 4
+    return None, "uses BARRAGE ATTACK (two shots this turn)"
+
+
+def relocate(game, ship, target):
+    """Destroyer. target = list of the new cells."""
+    error = game.me.check_move(ship, target) if target else "Pick a new position."
+    if error:
+        return error, None
+    ship.cells = list(target)             # damage & shields travel with the ship
+    return None, "uses RELOCATE (a ship moved)"
+
+
+def recon(game, ship, target):
+    """Carrier. target = (row, col) centre of the reveal."""
+    if target is None or not in_bounds(target):
+        return "Pick a cell on the enemy board.", None
+    game.foe.scan(area_cells(target, RECON_SIZE))
+    return None, f"uses RECON around {cell_name(target)}"
+
+
+def row_scan(game, ship, target):
+    """Cruiser. target = row index."""
+    if not isinstance(target, int) or not 0 <= target < GRID:
+        return "Pick a row.", None
+    game.foe.scan([(target, c) for c in range(GRID)])
+    return None, f"uses ROW SCAN on row {target + 1}"
+
+
+def stealth(game, ship, target):
+    """Submarine. The one exception to 'ability OR attack': it also gets one shot."""
+    ship.stealth_left = STEALTH_ROUNDS
+    game.attacks_left = 1
+    return None, "uses STEALTH (Submarine untargetable) and gets one shot"
+
+
+# ability key (from config.SHIP_SPECS) -> effect function
+ABILITY_EFFECTS = {
+    "barrage_attacks": barrage_attacks,
+    "relocate": relocate,
+    "recon": recon,
+    "row_scan": row_scan,
+    "stealth": stealth,
+}
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\rules\ai.py =====
+
+"""Picks which computer opponent to run based on game.difficulty.
+
+Keeps `from rules.ai import ai_step` working everywhere it's already used -
+only this file changed, nothing that calls ai_step needs to know about the
+three difficulty modules.
+"""
+from rules import ai_beginner, ai_intermediate, ai_expert
+
+AI_LEVELS = {
+    "beginner": ai_beginner,
+    "intermediate": ai_intermediate,
+    "expert": ai_expert,
+}
+
+
+def ai_step(game):
+    module = AI_LEVELS.get(getattr(game, "difficulty", "intermediate"), ai_intermediate)
+    return module.ai_step(game)
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\rules\ai_beginner.py =====
+
+"""Beginner computer opponent.
+
+Fires at a random legal cell every time. It never follows up on a hit (no
+hunt/target), never reads scan reveals, and never uses ship abilities.
+Meant to be an easy, occasionally lucky, mostly-losing opponent.
+"""
+import random
+
+from rules.config import GRID
+
+
+def ai_pick_cell(game):
+    board = game.foe
+    free = [(r, c) for r in range(GRID) for c in range(GRID) if board.can_fire((r, c))]
+    return random.choice(free)
+
+
+def ai_step(game):
+    """One AI action. Call repeatedly until the turn passes to the other player."""
+    return game.attack(ai_pick_cell(game))
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\rules\ai_expert.py =====
+
+"""Expert computer opponent.
+
+Targeting:
+  1. A shield just blocked a shot -> finish that cell off, it's unshielded now.
+  2. Recon / Row Scan already showed us a ship is sitting somewhere -> free hit.
+  3. Two or more unsunk hits on the same ship -> lock onto that line and fire
+     off the confirmed end(s), instead of poking randomly at all four sides.
+  4. Otherwise: a probability-density map. For every still-possible cell, count
+     how many ways each remaining ship (by size) could be placed through it -
+     the classic "where is a ship most likely to be" heuristic - and fire on
+     the busiest cell. This naturally favours the centre and open parity gaps
+     without hardcoding a checkerboard.
+
+Abilities (every ship, used with a reason, not a coin flip):
+  - Frigate  BARRAGE: fired only while actively chasing a hit - an extra shot
+    is worth the most right when it can capitalize on one.
+  - Destroyer RELOCATE: used defensively, to pull a damaged Destroyer off a
+    cell the enemy already knows about, onto an unshot patch of its own board.
+  - Carrier RECON / Cruiser ROW SCAN: used only when there's no active hunt,
+    i.e. it's about to guess blind anyway - better to spend the turn buying
+    information than to fire into the dark. Recon centres and the scanned row
+    are chosen using the same density map, so the scout goes where a ship is
+    statistically most likely to be.
+  - Submarine STEALTH: saved for when its own fleet is genuinely hurting (2+
+    damaged ships), since it both hides a ship for a round and still shoots.
+  - Repair / Shield: used between hunts to patch its biggest damaged ship or
+    pre-emptively shield its biggest healthy one, never in the middle of
+    chasing a kill.
+
+`remaining_sizes()` only trusts information the AI is entitled to: it treats
+a ship's size/identity as known only once one of its cells has been hit (the
+game already reveals ship identity via `board.ship_at`, and sinking is public
+info), matching the "public actions only" spirit of the simpler AIs.
+"""
+import random
+
+from rules.config import GRID, RECON_SIZE, SHIP_SPECS
+from rules.grid import area_cells, in_bounds, line_cells
+
+
+# ----- reading the board -----------------------------------------------------
+def remaining_sizes(board):
+    """Sizes of enemy ships not yet confirmed sunk."""
+    sunk = set()
+    for cell, kind in board.shots.items():
+        if kind == "hit":
+            ship = board.ship_at(cell)
+            if ship is not None and ship.sunk:
+                sunk.add(ship.name)
+    return [s["size"] for s in SHIP_SPECS if s["name"] not in sunk]
+
+
+def possible(board, cell):
+    """Could a ship still occupy this cell, as far as we're allowed to know?"""
+    return board.shots.get(cell) not in ("miss", "bomb")
+
+
+def density_map(board):
+    """For every still-fireable cell: how many remaining-ship placements cover it."""
+    scores = {}
+    for size in remaining_sizes(board):
+        for r in range(GRID):
+            for c in range(GRID):
+                for dr, dc in ((0, 1), (1, 0)):
+                    line = [(r + dr * i, c + dc * i) for i in range(size)]
+                    if all(in_bounds(cell) and possible(board, cell) for cell in line):
+                        for cell in line:
+                            if board.can_fire(cell):
+                                scores[cell] = scores.get(cell, 0) + 1
+    return scores
+
+
+def hunt_targets(board):
+    """Cells worth shooting: a freshly-unshielded cell, or a hit line to chase."""
+    for (r, c), kind in board.shots.items():
+        if kind == "blocked":
+            return [(r, c)]
+
+    by_ship = {}
+    for cell, kind in board.shots.items():
+        if kind != "hit":
+            continue
+        ship = board.ship_at(cell)
+        if ship is None or ship.sunk:
+            continue
+        by_ship.setdefault(id(ship), []).append(cell)
+
+    targets = []
+    for hits in by_ship.values():
+        rows = {r for r, _ in hits}
+        cols = {c for _, c in hits}
+        if len(hits) >= 2 and len(rows) == 1:
+            r = hits[0][0]
+            cs = sorted(c for _, c in hits)
+            targets += [t for t in ((r, cs[0] - 1), (r, cs[-1] + 1)) if board.can_fire(t)]
+        elif len(hits) >= 2 and len(cols) == 1:
+            c = hits[0][1]
+            rs = sorted(r for r, _ in hits)
+            targets += [t for t in ((rs[0] - 1, c), (rs[-1] + 1, c)) if board.can_fire(t)]
+        else:
+            for (r, c) in hits:
+                targets += [n for n in ((r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)) if board.can_fire(n)]
+    return targets
+
+
+def ai_pick_cell(board):
+    targets = hunt_targets(board)
+    if targets and board.shots.get(targets[0]) == "blocked":
+        return targets[0]
+
+    scanned_hits = [c for c, present in board.scanned.items() if present and board.can_fire(c)]
+    if scanned_hits:
+        return random.choice(scanned_hits)
+
+    if targets:
+        return random.choice(targets)
+
+    scores = density_map(board)
+    if scores:
+        best = max(scores.values())
+        return random.choice([c for c, v in scores.items() if v == best])
+
+    free = [(r, c) for r in range(GRID) for c in range(GRID) if board.can_fire((r, c))]
+    return random.choice(free)
+
+
+# ----- scouting targets for Carrier / Cruiser --------------------------------
+def best_recon_center(board):
+    scores = density_map(board)
+    best_cell, best_score = None, -1
+    for r in range(GRID):
+        for c in range(GRID):
+            if (r, c) in board.scanned:
+                continue
+            total = sum(scores.get(cell, 0) for cell in area_cells((r, c), RECON_SIZE))
+            if total > best_score:
+                best_cell, best_score = (r, c), total
+    return best_cell
+
+
+def best_row(board):
+    scores = density_map(board)
+    best_row_idx, best_score = None, -1
+    for r in range(GRID):
+        unknown = [c for c in range(GRID) if (r, c) not in board.scanned and board.can_fire((r, c))]
+        if not unknown:
+            continue
+        total = sum(scores.get((r, c), 0) for c in unknown)
+        if total > best_score:
+            best_row_idx, best_score = r, total
+    return best_row_idx
+
+
+# ----- self-preservation: Destroyer / Repair / Shield ------------------------
+def find_relocation(board, ship):
+    """A same-size spot for `ship`, on its own board, the enemy hasn't shot at yet."""
+    candidates = []
+    for r in range(GRID):
+        for c in range(GRID):
+            for horizontal in (True, False):
+                cells = line_cells((r, c), ship.size, horizontal)
+                if board.check_move(ship, cells) is None:
+                    candidates.append(cells)
+    return random.choice(candidates) if candidates else None
+
+
+def best_repair_cell(board):
+    cells = board.repairable_cells()
+    return max(cells, key=lambda cell: board.ship_at(cell).size) if cells else None
+
+
+def best_shield_cell(board):
+    cells = board.shieldable_cells()
+    return max(cells, key=lambda cell: board.ship_at(cell).size) if cells else None
+
+
+# ----- turn logic --------------------------------------------------------------
+def ai_step(game):
+    """One AI action. Call repeatedly until the turn passes to the other player."""
+    board = game.foe
+    me = game.me
+
+    if game.attacks_left == 0:
+        hunting = bool(hunt_targets(board))
+
+        # Press the advantage: an extra shot is worth the most while chasing a hit.
+        frigate = me.get_ship("Frigate")
+        if hunting and frigate and not frigate.sunk and frigate.ability.ready:
+            return game.use_ability("Frigate")
+
+        # Pull a damaged Destroyer out of danger before it gets finished off.
+        destroyer = me.get_ship("Destroyer")
+        if destroyer and not destroyer.sunk and destroyer.hit and destroyer.ability.ready:
+            spot = find_relocation(me, destroyer)
+            if spot:
+                return game.use_ability("Destroyer", spot)
+
+        if not hunting:
+            # Patch up whichever damaged ship is worth the most hull.
+            if game.options["repair"] and me.repairs_left > 0:
+                cell = best_repair_cell(me)
+                if cell and random.random() < 0.5:
+                    return game.use_repair(cell)
+
+            # Pre-emptively shield the fleet's biggest healthy asset.
+            if game.options["shield"] and me.shields_left > 0:
+                cell = best_shield_cell(me)
+                if cell and random.random() < 0.3:
+                    return game.use_shield(cell)
+
+            # No live lead: buy information instead of guessing blind.
+            carrier = me.get_ship("Carrier")
+            if carrier and not carrier.sunk and carrier.ability.ready and random.random() < 0.5:
+                center = best_recon_center(board)
+                if center:
+                    return game.use_ability("Carrier", center)
+
+            cruiser = me.get_ship("Cruiser")
+            if cruiser and not cruiser.sunk and cruiser.ability.ready and random.random() < 0.4:
+                row = best_row(board)
+                if row is not None:
+                    return game.use_ability("Cruiser", row)
+
+        # Heavily damaged: vanish for a round and still get a shot in.
+        sub = me.get_ship("Submarine")
+        if sub and not sub.sunk and sub.ability.ready:
+            damaged = sum(1 for s in me.ships if not s.sunk and s.hit)
+            if damaged >= 2 and random.random() < 0.5:
+                return game.use_ability("Submarine")
+
+    return game.attack(ai_pick_cell(board))
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\rules\ai_intermediate.py =====
+
+"""Intermediate computer opponent.
+
+Same hunt/target + checkerboard search as a basic AI, but ability timing is
+tuned instead of being a flat coin flip: it saves the Frigate's extra shots
+for when it already has a hit to chase, and reaches for the Submarine's
+stealth when its own fleet is taking damage. It still ignores Destroyer,
+Carrier and Cruiser - those need real target selection (see the Expert AI).
+"""
+import random
+
+from rules.config import GRID
+
+
+def hunt_targets(board):
+    """Cells worth shooting because of a shield-block or an unsunk hit."""
+    for (r, c), kind in board.shots.items():
+        if kind == "blocked":
+            return [(r, c)]  # a shield just came down here - always finish it first
+
+    targets = []
+    for (r, c), kind in board.shots.items():
+        if kind != "hit":
+            continue
+        ship = board.ship_at((r, c))
+        if ship is not None and ship.sunk:      # sinking is public info, nothing left to chase
+            continue
+        targets += [n for n in ((r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)) if board.can_fire(n)]
+    return targets
+
+
+def ai_pick_cell(board):
+    targets = hunt_targets(board)
+    if targets:
+        return random.choice(targets)
+    free = [(r, c) for r in range(GRID) for c in range(GRID) if board.can_fire((r, c))]
+    return random.choice([x for x in free if (x[0] + x[1]) % 2 == 0] or free)
+
+
+def ai_step(game):
+    """One AI action. Call repeatedly until the turn passes to the other player."""
+    board = game.foe
+    if game.attacks_left == 0:
+        hunting = bool(hunt_targets(board))
+
+        frigate = game.me.get_ship("Frigate")
+        if frigate and not frigate.sunk and frigate.ability.ready:
+            # An extra shot is worth far more while it already has a target to chase.
+            chance = 0.65 if hunting else 0.2
+            if random.random() < chance:
+                return game.use_ability("Frigate")
+
+        sub = game.me.get_ship("Submarine")
+        if sub and not sub.sunk and sub.ability.ready:
+            damaged = sum(1 for s in game.me.ships if not s.sunk and s.hit)
+            chance = 0.45 if damaged >= 2 else 0.15
+            if random.random() < chance:
+                return game.use_ability("Submarine")
+
+    return game.attack(ai_pick_cell(board))
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\rules\board.py =====
+
+"""One player's board: ship placement, incoming shots, scans, bomb."""
+import random
+
+from rules.config import GRID, REPAIR_USES, SHIELD_USES, SHIP_SPECS
+from rules.grid import in_bounds, line_cells
+from rules.ship import Ship
+
+
+class Board:
+    """
+    shots   = every shot fired AT this board, cell -> "hit" | "miss" | "blocked" | "bomb".
+              This doubles as the attacker's map of what they know.
+    scanned = cells revealed to the enemy by Recon / Row Scan, cell -> True if a ship
+              was there at the moment of the scan.
+    """
+
+    def __init__(self):
+        self.ships = []
+        self.shots = {}
+        self.scanned = {}
+        self.bomb = None                  # hidden trap cell (on water) or None
+        self.repairs_left = REPAIR_USES
+        self.shields_left = SHIELD_USES
+
+    # ----- lookups -----
+    def get_ship(self, name):
+        return next((s for s in self.ships if s.name == name), None)
+
+    def ship_at(self, cell):
+        return next((s for s in self.ships if cell in s.cells), None)
+
+    def fleet_sunk(self):
+        return bool(self.ships) and all(s.sunk for s in self.ships)
+
+    def can_fire(self, cell):
+        # A cell whose shield just blocked a shot can be fired at again.
+        return in_bounds(cell) and self.shots.get(cell) in (None, "blocked")
+
+    # ----- setup -----
+    def can_place(self, cells, ignore=None):
+        for cell in cells:
+            if not in_bounds(cell) or cell == self.bomb:
+                return False
+            ship = self.ship_at(cell)
+            if ship is not None and ship is not ignore:
+                return False
+        return True
+
+    def place_ship(self, spec, cells):
+        if len(cells) != spec["size"] or not self.can_place(cells):
+            return False
+        self.ships.append(Ship(spec, cells))
+        return True
+
+    def remove_ship(self, name):
+        self.ships = [s for s in self.ships if s.name != name]
+
+    def set_bomb(self, cell):
+        if in_bounds(cell) and self.ship_at(cell) is None:
+            self.bomb = cell
+            return True
+        return False
+
+    def setup_done(self, with_bomb):
+        return len(self.ships) == len(SHIP_SPECS) and (not with_bomb or self.bomb is not None)
+
+    def random_setup(self, with_bomb):
+        self.ships, self.bomb = [], None
+        for spec in SHIP_SPECS:
+            while True:
+                anchor = (random.randrange(GRID), random.randrange(GRID))
+                cells = line_cells(anchor, spec["size"], random.random() < 0.5)
+                if self.can_place(cells):
+                    break
+            self.place_ship(spec, cells)
+        if with_bomb:
+            while not self.set_bomb((random.randrange(GRID), random.randrange(GRID))):
+                pass
+
+    # ----- movement (Destroyer) -----
+    def check_move(self, ship, cells):
+        """Return an error string, or None if `ship` may move onto `cells`."""
+        if len(cells) != ship.size or not self.can_place(cells, ignore=ship):
+            return "That position is off the board or overlaps something."
+        if set(cells) == set(ship.cells):
+            return "Pick a different position."
+        if not all(self.can_fire(c) for c in cells):
+            return "Can't move onto cells the enemy has already fired at."
+        return None
+
+    # ----- damage -----
+    def receive_attack(self, cell):
+        """Resolve one shot. Returns (result, ship_or_None)."""
+        if cell == self.bomb:
+            self.shots[cell] = "bomb"
+            self.bomb = None
+            return "bomb", None
+
+        ship = self.ship_at(cell)
+
+        if ship is None:
+            self.shots[cell] = "miss"
+            return "miss", None
+
+        if ship.stealthed:
+            return "stealth", ship
+
+        i = ship.cells.index(cell)
+
+        if i in ship.shield:
+            ship.shield.discard(i)
+            self.shots[cell] = "blocked"
+            return "blocked", ship
+
+        ship.hit.add(i)
+        self.shots[cell] = "hit"
+        return "hit", ship
+
+    def scan(self, cells):
+        for cell in cells:
+            self.scanned[cell] = self.ship_at(cell) is not None
+
+    # ----- helpers for Repair / Shield -----
+    def repairable_cells(self):
+        return [s.cells[i] for s in self.ships if not s.sunk for i in s.hit]
+
+    def shieldable_cells(self):
+        return [s.cells[i] for s in self.ships if not s.sunk
+                for i in range(s.size) if i not in s.hit and i not in s.shield]
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\rules\config.py =====
+
+"""
+TUNING KNOBS. Change numbers here to rebalance the game; no other file needs to change.
+
+  uses      total uses per game (None = unlimited)
+  cooldown  rounds before it can be used again (0 = never recharges).
+            Used on your turn N with cooldown 2 -> ready again on your turn N+2.
+"""
+
+GRID = 15
+
+SHIP_SPECS = [
+    # Frigate option B (rechargeable): uses=None, cooldown=2
+    dict(name="Frigate",   size=5, key="barrage_attacks", label="BARRAGE ATTACK", uses=3, cooldown=0),
+    # Destroyer: one-time now; set cooldown=N (and uses=None) to let it recharge
+    dict(name="Destroyer", size=3, key="relocate",      label="RELOCATE",      uses=1, cooldown=0),
+    # Carrier option B (rechargeable): uses=None, cooldown=2 and RECON_SIZE = 2
+    dict(name="Carrier",   size=3, key="recon",         label="RECON",         uses=2, cooldown=0),
+    # Cruiser: "once or twice" -> change uses
+    dict(name="Cruiser",   size=2, key="row_scan",      label="ROW SCAN",      uses=2, cooldown=0),
+    dict(name="Submarine", size=2, key="stealth",       label="STEALTH",       uses=1, cooldown=0),
+]
+
+RECON_SIZE = 3        # 3 = 3x3 reveal (2 = 2x2, where the clicked cell is the top-left)
+STEALTH_ROUNDS = 3    # how many enemy turns the Submarine is untargetable
+REPAIR_USES = 3
+SHIELD_USES = 3
+
+# Lookups built from SHIP_SPECS (don't edit)
+SPEC_BY_NAME = {s["name"]: s for s in SHIP_SPECS}
+SHIP_BY_KEY = {s["key"]: s["name"] for s in SHIP_SPECS}      # ability key -> ship name
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\rules\extras.py =====
+
+"""
+OPTIONAL MECHANICS: Bomb, Repair, Shield.
+
+Same shape as abilities.py: repair() and shield() take (game, cell) and return
+(error, log_text). To remove a mechanic, delete its function here, its method in
+game.py, and its option in ui/app.py.
+"""
+import random
+
+
+def detonate_bomb(attacker_board):
+    """The trap hurts the attacker's ship with the most HP remaining (ties: random)."""
+    alive = [s for s in attacker_board.ships if not s.sunk]
+    top = max(s.hp for s in alive)
+    ship = random.choice([s for s in alive if s.hp == top])
+    seg = random.choice([i for i in range(ship.size) if i not in ship.hit])
+    ship.hit.add(seg)                       # the bomb ignores shields
+    ship.shield.discard(seg)
+    return f"{ship.name} takes 1 damage" + (" and is SUNK!" if ship.sunk else "")
+
+
+def repair(game, cell):
+    if not game.options["repair"]:
+        return "Repair is disabled.", None
+    board = game.me
+    if board.repairs_left <= 0:
+        return "No repairs left.", None
+    if cell not in board.repairable_cells():
+        return "Pick a damaged cell on a ship that is still afloat.", None
+    ship = board.ship_at(cell)
+    ship.hit.discard(ship.cells.index(cell))
+    if board.shots.get(cell) == "hit":
+        del board.shots[cell]               # the enemy may shoot this cell again
+    board.repairs_left -= 1
+    return None, "repairs a ship"
+
+
+def shield(game, cell):
+    if not game.options["shield"]:
+        return "Shield is disabled.", None
+    board = game.me
+    if board.shields_left <= 0:
+        return "No shields left.", None
+    if cell not in board.shieldable_cells():
+        return "Pick an undamaged, unshielded cell of a ship that is afloat.", None
+    ship = board.ship_at(cell)
+    ship.shield.add(ship.cells.index(cell))
+    board.shields_left -= 1
+    return None, "raises a shield"
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\rules\game.py =====
+
+"""
+THE GAME: whose turn it is, and the actions a player can take.
+
+The UI only ever calls these methods:  attack / use_ability / use_repair / use_shield.
+Each returns (ok, text). If ok is False nothing changed and text is the reason;
+if ok is True, text is the log line for what happened.
+
+Where things live:
+  what each ship ability does ..... rules/abilities.py
+  bomb / repair / shield .......... rules/extras.py
+  hit / miss / stealth / shield
+  resolution on a single cell ..... rules/board.py  (Board.receive_attack)
+"""
+from rules import extras
+from rules.abilities import ABILITY_EFFECTS
+from rules.board import Board
+from rules.grid import cell_name
+
+
+class Game:
+    def __init__(self, options=None):
+        self.options = {"bomb": True, "repair": True, "shield": True}
+        self.options.update(options or {})
+        self.boards = [Board(), Board()]
+        self.names = ["Player 1", "Player 2"]
+        self.current = 0
+        self.attacks_left = 0       # > 0 while the player is mid-turn (Frigate / Submarine)
+        self.winner = None
+        self.difficulty = "intermediate"   # NEW LINE: "beginner" | "intermediate" | "expert"
+        self.log = []               # every line, whole game
+        self.turn_log = []          # lines from the turn in progress
+        self.last_turn_log = []     # lines from the turn that just ended
+
+    @property
+    def me(self):
+        return self.boards[self.current]
+
+    @property
+    def foe(self):
+        return self.boards[1 - self.current]
+
+    def begin(self):
+        """Call once both boards are set up."""
+        self.current = 0
+        self.winner = None
+        self._start_turn()
+
+    # ----- turn flow -----
+    def _start_turn(self):
+        self.attacks_left = 0
+        for ship in self.me.ships:
+            ship.ability.tick()
+            ship.stealth_left = max(0, ship.stealth_left - 1)
+
+    def end_turn(self):
+        self.last_turn_log, self.turn_log = self.turn_log, []
+        self.current = 1 - self.current
+        self._start_turn()
+
+    def _after_action(self):
+        for p in (0, 1):
+            if self.boards[p].fleet_sunk():
+                self.winner = 1 - p
+        if self.winner is None and self.attacks_left == 0:
+            self.end_turn()
+
+    def _finish(self, text):
+        """Log the action, check for victory, end the turn unless shots are still owed."""
+        line = self._say(text)
+        self._after_action()
+        return line
+
+    def _say(self, text):
+        line = f"{self.names[self.current]} {text}"
+        self.log.append(line)
+        self.turn_log.append(line)
+        return line
+
+    def _start_check(self):
+        if self.winner is not None:
+            return "The game is over."
+        if self.attacks_left > 0:
+            return "Finish your shots first."
+        return None
+
+    # ----- attack -----
+    def attack(self, cell):
+        if self.winner is not None:
+            return False, "The game is over."
+        if not self.foe.can_fire(cell):
+            return False, "You can't fire there."
+        if self.attacks_left == 0:              # a plain one-shot turn
+            self.attacks_left = 1
+        self.attacks_left -= 1
+        return True, self._finish(self._shoot(cell))
+
+    def _shoot(self, cell):
+        result, ship = self.foe.receive_attack(cell)
+        where = cell_name(cell)
+
+        if result == "hit":
+            return f"fires at {where}: HIT" + (f" - {ship.name} SUNK!" if ship.sunk else "")
+
+        if result == "blocked":
+            return f"fires at {where}: a shield blocked the hit"
+
+        if result == "stealth":
+            return f"fires at {where}: SUBMARINE DETECTED - no damage"
+
+        if result == "bomb":
+            return f"fires at {where}: BOMB! " + extras.detonate_bomb(self.me)
+
+        return f"fires at {where}: miss"
+
+    # ----- ship abilities -----
+    def use_ability(self, ship_name, target=None):
+        """
+        target depends on the ability:
+          recon -> (row, col) cell    row_scan -> row index    relocate -> list of new cells
+          barrage_attacks / stealth -> None
+        """
+        err = self._start_check()
+        if err:
+            return False, err
+        ship = self.me.get_ship(ship_name)
+        if ship is None or ship.sunk:
+            return False, f"{ship_name} is not in action."
+        ability = ship.ability
+        if not ability.ready:
+            return False, f"{ability.label} isn't ready."
+
+        error, text = ABILITY_EFFECTS[ability.key](self, ship, target)
+        if error:
+            return False, error
+        ability.spend()
+        return True, self._finish(text)
+
+    # ----- optional mechanics -----
+    def use_repair(self, cell):
+        return self._use_extra(extras.repair, cell)
+
+    def use_shield(self, cell):
+        return self._use_extra(extras.shield, cell)
+
+    def _use_extra(self, effect, cell):
+        err = self._start_check()
+        if err:
+            return False, err
+        error, text = effect(self, cell)
+        if error:
+            return False, error
+        return True, self._finish(text)
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\rules\grid.py =====
+
+"""Tiny coordinate helpers. A cell is a (row, col) tuple."""
+from rules.config import GRID
+
+
+def in_bounds(cell):
+    return 0 <= cell[0] < GRID and 0 <= cell[1] < GRID
+
+
+def cell_name(cell):
+    return f"{chr(65 + cell[1])}{cell[0] + 1}"          # (0, 0) -> "A1"
+
+
+def line_cells(anchor, size, horizontal):
+    r, c = anchor
+    return [(r, c + i) if horizontal else (r + i, c) for i in range(size)]
+
+
+def area_cells(center, n):
+    """n x n block around center (clipped to the board)."""
+    off = (n - 1) // 2
+    r, c = center
+    return [(rr, cc) for rr in range(r - off, r - off + n)
+            for cc in range(c - off, c - off + n) if in_bounds((rr, cc))]
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\rules\ship.py =====
+
+"""A ship: its cells, damage, shields, stealth flag and its one ability."""
+from rules.abilities import Ability
+
+
+class Ship:
+    def __init__(self, spec, cells):
+        self.name = spec["name"]
+        self.size = spec["size"]
+        self.cells = list(cells)          # cells[i] is segment i
+        self.hit = set()                  # damaged segment indices
+        self.shield = set()               # shielded segment indices
+        self.stealth_left = 0             # > 0 -> untargetable
+        self.ability = Ability(spec)
+
+    @property
+    def hp(self):
+        return self.size - len(self.hit)
+
+    @property
+    def sunk(self):
+        return self.hp == 0
+
+    @property
+    def stealthed(self):
+        return self.stealth_left > 0
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\rules\__init__.py =====
+
+"""GAME RULES. Nothing in this folder may import pygame."""
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\settings\settings.py =====
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\app.py =====
+
+"""
+THE APP: owns the shared state (options, mode, the Game) and runs the main loop.
+
+Screens: menu -> setup -> (handoff) -> play -> gameover   (see ui/screens/)
+Switch screens with app.goto("name"). Don't put drawing or click handling here.
+"""
+import sys
+
+import pygame
+
+from audio.sound_manager import SoundManager
+from rules.game import Game
+from ui.display import clock, screen
+from ui.screens.gameover import GameOverScreen
+from ui.screens.handoff import HandoffScreen
+from ui.screens.menu import MenuScreen
+from ui.screens.play import PlayScreen
+from ui.screens.setup import SetupScreen
+from ui.theme import BG
+from ui.widgets import MuteButton
+
+
+class App:
+    def __init__(self):
+        self.options = {"bomb": True, "repair": True, "shield": True}   # optional mechanics
+        self.mode = "ai"  
+        self.difficulty = "intermediate"   # "beginner" | "intermediate" | "expert"
+        self.game = None
+        self.sound_manager = SoundManager()
+        self.mute_btn = MuteButton()
+        self.screens = {
+            "menu": MenuScreen(self),
+            "setup": SetupScreen(self),
+            "handoff": HandoffScreen(self),
+            "play": PlayScreen(self),
+            "gameover": GameOverScreen(self),
+        }
+        self.current = self.screens["menu"]
+        self.sound_manager.start_music()
+
+    # ----- navigation -----
+    def goto(self, name, **kwargs):
+        self.current = self.screens[name]
+        self.current.enter(**kwargs)
+
+    def handoff(self, lines, after):
+        """Show the curtain screen; call `after()` when the player clicks."""
+        self.goto("handoff", lines=lines, after=after)
+
+    def new_game(self, mode):
+        """Called from the menu. Creates the Game and starts fleet deployment."""
+        self.mode = mode
+        self.game = Game(self.options)
+        self.game.difficulty = self.difficulty
+        self.game.names = ["Player 1", "Computer" if mode == "ai" else "Player 2"]
+        setup = self.screens["setup"]
+        setup.index = 0
+        if mode == "duo":
+            self.handoff(["Player 1: deploy your fleet", "Player 2, look away!"], setup.begin)
+        else:
+            setup.begin()
+
+    def quit(self):
+        self.sound_manager.stop_music()
+        pygame.quit()
+        sys.exit()
+
+    # ----- main loop -----
+    def run(self):
+        while True:
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
+                    self.quit()
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                    if self.mute_btn.hit(e.pos):
+                        self.sound_manager.toggle_mute()
+                        continue
+                self.current.on_event(e)
+            self.current.update()
+            screen.fill(BG)
+            self.current.draw()
+            self.mute_btn.draw(muted=self.sound_manager.is_muted)
+            pygame.display.flip()
+            clock.tick(60)
+
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\board_view.py =====
+
+"""Drawing a board: the grid, ships, markers, previews. Also pixel <-> cell conversion."""
+import pygame
+
+from rules.config import GRID
+from ui.display import screen
+from ui.layout import BOARD_PX, CELL
+from ui.theme import (BG, CYAN, GRID_C, MUTED, ORANGE, RED, SCAN_SHIP, SCAN_WATER, SHIP, SHIP_HIT,
+                      SHIP_STEALTH, SHIP_SUNK, SMALL, WATER, WHITE, YELLOW)
+from ui.widgets import text
+
+
+def cell_rect(ox, oy, cell):
+    return pygame.Rect(ox + cell[1] * CELL, oy + cell[0] * CELL, CELL, CELL)
+
+
+def cell_at(pos, ox, oy):
+    """Pixel position -> (row, col), or None if it isn't over the board at (ox, oy)."""
+    c, r = (pos[0] - ox) // CELL, (pos[1] - oy) // CELL
+    return (r, c) if 0 <= r < GRID and 0 <= c < GRID else None
+
+
+def highlight(cells, ox, oy, color):
+    """Translucent overlay on some cells (hover previews). color is RGBA."""
+    tile = pygame.Surface((CELL, CELL), pygame.SRCALPHA)
+    tile.fill(color)
+    for cell in cells:
+        screen.blit(tile, cell_rect(ox, oy, cell).topleft)
+
+
+def draw_grid(ox, oy):
+    pygame.draw.rect(screen, WATER, (ox, oy, BOARD_PX, BOARD_PX))
+    for i in range(GRID + 1):
+        pygame.draw.line(screen, GRID_C, (ox + i * CELL, oy), (ox + i * CELL, oy + BOARD_PX))
+        pygame.draw.line(screen, GRID_C, (ox, oy + i * CELL), (ox + BOARD_PX, oy + i * CELL))
+    for i in range(GRID):
+        text(chr(65 + i), (ox + i * CELL + CELL // 2, oy - 12), SMALL, MUTED, center=True)
+        text(str(i + 1), (ox - 14, oy + i * CELL + CELL // 2), SMALL, MUTED, center=True)
+
+
+def draw_marker(kind, rect):
+    cx, cy = rect.center
+    if kind == "hit":
+        pygame.draw.circle(screen, RED, (cx, cy), 10)
+        pygame.draw.line(screen, WHITE, (cx - 6, cy - 6), (cx + 6, cy + 6), 2)
+        pygame.draw.line(screen, WHITE, (cx + 6, cy - 6), (cx - 6, cy + 6), 2)
+    elif kind == "miss":
+        pygame.draw.circle(screen, MUTED, (cx, cy), 3)
+    elif kind == "blocked":
+        pygame.draw.circle(screen, CYAN, (cx, cy), 10, 3)
+    elif kind == "bomb":
+        pygame.draw.circle(screen, ORANGE, (cx, cy), 11)
+        text("B", (cx, cy), SMALL, BG, center=True)
+
+
+def draw_own_board(board, ox, oy):
+    """Everything is visible: your ships, damage, shields, bomb and the enemy's misses."""
+    draw_grid(ox, oy)
+    for ship in board.ships:
+        for i, cell in enumerate(ship.cells):
+            rect = cell_rect(ox, oy, cell).inflate(-4, -4)
+            color = SHIP_HIT if i in ship.hit else (SHIP_STEALTH if ship.stealthed else SHIP)
+            if ship.sunk:
+                color = SHIP_SUNK
+            pygame.draw.rect(screen, color, rect, border_radius=3)
+            if i in ship.hit:
+                pygame.draw.line(screen, WHITE, rect.topleft, rect.bottomright, 2)
+                pygame.draw.line(screen, WHITE, rect.topright, rect.bottomleft, 2)
+            elif i == 0:
+                text(ship.name[0], rect.center, SMALL, BG, center=True)
+            if i in ship.shield:
+                pygame.draw.rect(screen, CYAN, rect, 3, border_radius=3)
+    if board.bomb:
+        r = cell_rect(ox, oy, board.bomb)
+        pygame.draw.polygon(screen, ORANGE, [(r.centerx, r.top + 5), (r.right - 5, r.centery),
+                                             (r.centerx, r.bottom - 5), (r.left + 5, r.centery)], 2)
+    for cell, kind in board.shots.items():
+        if kind != "hit":                       # hits already show as damaged ship cells
+            draw_marker(kind, cell_rect(ox, oy, cell))
+
+
+def draw_enemy_board(board, ox, oy, reveal=False):
+    """Only what you have learned: shots, scans. (reveal=True after the game ends.)"""
+    draw_grid(ox, oy)
+    for cell, occupied in board.scanned.items():
+        rect = cell_rect(ox, oy, cell)
+        pygame.draw.rect(screen, SCAN_SHIP if occupied else SCAN_WATER, rect.inflate(-2, -2))
+        if occupied and cell not in board.shots:
+            pygame.draw.rect(screen, YELLOW, pygame.Rect(0, 0, 8, 8).move(rect.centerx - 4, rect.centery - 4))
+    if reveal:
+        for ship in board.ships:
+            for cell in ship.cells:
+                pygame.draw.rect(screen, SHIP, cell_rect(ox, oy, cell).inflate(-6, -6), 2, border_radius=3)
+    for cell, kind in board.shots.items():
+        draw_marker(kind, cell_rect(ox, oy, cell))
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\display.py =====
+
+"""The window. Importing this module starts pygame and opens the window."""
+import pygame
+
+pygame.init()
+W, H = 1280, 780
+screen = pygame.display.set_mode((W, H))
+pygame.display.set_caption("WARGRID: Naval strike")
+clock = pygame.time.Clock()
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\layout.py =====
+
+"""Sizes and positions (in pixels). Move things around here."""
+from rules.config import GRID
+
+CELL = 32
+BOARD_PX = GRID * CELL
+BOARD_Y = 105
+LEFT_X = 50            # your fleet (play screen)
+RIGHT_X = 750          # enemy waters (play screen)
+SETUP_X = 60           # the board on the setup screen
+STATUS_X = 548         # the fleet-status column between the two boards
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\panels.py =====
+
+"""The fleet-status column between the two boards (play screen)."""
+import pygame
+
+from ui.display import screen
+from ui.layout import STATUS_X
+from ui.theme import ACCENT, CYAN, MUTED, RED, SHIP, SMALL, TEXT
+from ui.widgets import text
+
+
+def draw_fleet_status(mine, theirs):
+    x, y = STATUS_X, 105
+    text("YOUR SHIPS", (x, y), SMALL, ACCENT)
+    y += 22
+    for ship in mine.ships:
+        tag = "  STEALTH" if ship.stealthed else ""
+        text(ship.name + tag, (x, y), SMALL, RED if ship.sunk else TEXT)
+        for i in range(ship.size):
+            r = pygame.Rect(x + i * 18, y + 19, 14, 14)
+            pygame.draw.rect(screen, RED if i in ship.hit else SHIP, r)
+            if i in ship.shield:
+                pygame.draw.rect(screen, CYAN, r, 2)
+        y += 44
+    y += 8
+    text("ENEMY SHIPS", (x, y), SMALL, ACCENT)
+    y += 22
+    for ship in theirs.ships:
+        sunk = ship.sunk
+        text(f"{ship.name:<10}{'SUNK' if sunk else 'afloat'}", (x, y), SMALL, RED if sunk else MUTED)
+        y += 22
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\theme.py =====
+
+"""Colors, fonts, and motion helpers. Change the look and feel of the whole game here."""
+import math
+import time
+
+import pygame
+
+pygame.font.init()
+
+# ---------------------------------------------------------------- palette --
+# Elevation tiers instead of one flat BG/PANEL pair -> panels visibly "float".
+BG          = (8, 12, 18)          # deepest layer, behind everything
+BG_GRADIENT_TOP = (10, 16, 24)
+BG_GRADIENT_BOT = (6, 9, 14)
+PANEL       = (17, 24, 34)         # a resting card
+PANEL_2     = (23, 32, 44)         # kept for backward-compat with existing code
+PANEL_RAISED = (27, 38, 52)        # a card that's "up" (selected/active)
+PANEL_HOVER = (34, 47, 64)         # a card under the cursor
+
+GRID_C = (46, 64, 84)
+WATER  = (14, 36, 52)
+WATER_DEEP = (10, 26, 38)
+
+TEXT   = (232, 240, 246)
+MUTED  = (128, 145, 160)
+FAINT  = (70, 84, 98)              # for the quietest labels/dividers
+
+# Two accents instead of one, so nothing has to multitask:
+ACCENT       = (64, 217, 180)      # cyan-teal: selection, positive, "go"
+ACCENT_DIM   = (40, 130, 112)
+DANGER       = (235, 74, 90)       # hits, damage, destructive actions
+DANGER_DIM   = (140, 50, 58)
+WARNING      = (239, 166, 70)      # bomb, caution
+GOLD         = (244, 200, 90)      # scans / discoveries
+
+RED    = DANGER
+ORANGE = WARNING
+YELLOW = GOLD
+CYAN   = (90, 205, 240)
+WHITE  = (247, 250, 252)
+
+SHIP         = (108, 122, 136)
+SHIP_HIT     = (196, 92, 84)
+SHIP_SUNK    = (70, 34, 38)
+SHIP_STEALTH = (66, 100, 158)
+SCAN_WATER   = (22, 64, 72)
+SCAN_SHIP    = (108, 96, 44)
+
+GLOW = (64, 217, 180)              # focus-ring / pulse color, pair with alpha
+
+FONT  = pygame.font.SysFont("consolas", 18)
+SMALL = pygame.font.SysFont("consolas", 14)
+BIG   = pygame.font.SysFont("consolas", 28, bold=True)
+HUGE  = pygame.font.SysFont("consolas", 46, bold=True)
+LABEL = pygame.font.SysFont("consolas", 12, bold=True)   # tiny all-caps tags/badges
+
+
+# ------------------------------------------------------------- easing ------
+def ease_out_cubic(t):
+    t = max(0.0, min(1.0, t))
+    return 1 - (1 - t) ** 3
+
+
+def ease_out_back(t, overshoot=1.7):
+    t = max(0.0, min(1.0, t))
+    return 1 + (overshoot + 1) * (t - 1) ** 3 + overshoot * (t - 1) ** 2
+
+
+def lerp(a, b, t):
+    return a + (b - a) * t
+
+
+def lerp_color(c1, c2, t):
+    return tuple(int(lerp(a, b, t)) for a, b in zip(c1, c2))
+
+
+# ------------------------------------------------------------- Anim --------
+class Anim:
+    """A single eased value that animates toward a target over `dur` seconds.
+    Use for hover glow, button scale/punch, panel fade-ins, screen shake."""
+
+    def __init__(self, value=0.0):
+        self.value = value
+        self._start = value
+        self._target = value
+        self._t0 = 0.0
+        self._dur = 0.0
+        self._ease = ease_out_cubic
+
+    def to(self, target, dur=0.15, ease=ease_out_cubic):
+        if target == self._target and self._dur:
+            return self
+        self._start, self._target = self.value, target
+        self._t0, self._dur, self._ease = time.time(), dur, ease
+        return self
+
+    def update(self):
+        if self._dur <= 0:
+            self.value = self._target
+            return self.value
+        t = (time.time() - self._t0) / self._dur
+        if t >= 1:
+            self.value = self._target
+            self._dur = 0
+        else:
+            self.value = lerp(self._start, self._target, self._ease(t))
+        return self.value
+
+
+class Shake:
+    """Call kick() on impact, call offset() every frame while drawing the board."""
+
+    def __init__(self):
+        self.until = 0.0
+        self.mag = 0.0
+
+    def kick(self, mag=6, dur=0.18):
+        self.until = time.time() + dur
+        self.mag = mag
+        self._dur = dur
+
+    def offset(self):
+        now = time.time()
+        if now >= self.until:
+            return 0, 0
+        remaining = (self.until - now) / max(self._dur, 0.001)
+        m = self.mag * remaining
+        seed = now * 60
+        return (math.sin(seed) * m, math.cos(seed * 1.3) * m)
+
+
+def pulse(period=1.4, lo=0.35, hi=1.0):
+    """0..1 breathing value for 'your turn' style ambient glow."""
+    t = (math.sin(time.time() * (2 * math.pi / period)) + 1) / 2
+    return lerp(lo, hi, t)
+
+
+# --------------------------------------------------------- drawing helpers -
+def vertical_gradient(surface, rect, top_color, bottom_color):
+    x, y, w, h = rect
+    for i in range(h):
+        t = i / max(h - 1, 1)
+        pygame.draw.line(surface, lerp_color(top_color, bottom_color, t), (x, y + i), (x + w, y + i))
+
+
+def glow_rect(surface, rect, color, alpha, radius=10, spread=10):
+    """Soft outer glow behind a panel/button â€” draw this BEFORE the panel itself."""
+    glow = pygame.Surface((rect.width + spread * 2, rect.height + spread * 2), pygame.SRCALPHA)
+    pygame.draw.rect(glow, (*color, alpha), glow.get_rect(), border_radius=radius + spread // 2)
+    surface.blit(glow, (rect.x - spread, rect.y - spread))
+
+
+def panel(surface, rect, fill=PANEL, border=FAINT, border_w=1, radius=10, shadow=True):
+    """A 'card' with a soft drop shadow, replacing bare pygame.draw.rect panels."""
+    if shadow:
+        sh = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+        pygame.draw.rect(sh, (0, 0, 0, 90), sh.get_rect(), border_radius=radius)
+        surface.blit(sh, (rect.x, rect.y + 4))
+    pygame.draw.rect(surface, fill, rect, border_radius=radius)
+    if border_w:
+        pygame.draw.rect(surface, border, rect, border_w, border_radius=radius)
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\widgets.py =====
+
+"""Reusable bits: text drawing and buttons â€” now with hover glow, press punch,
+and floating combat text so actions feel like they landed instead of just
+changing a value silently."""
+import time
+
+import pygame
+
+from ui.display import screen
+from ui.theme import (ACCENT, DANGER, FAINT, FONT, GOLD, MUTED, PANEL, PANEL_HOVER,
+                       PANEL_RAISED, RED, SMALL, TEXT, Anim, ease_out_back, glow_rect,
+                       lerp_color, panel)
+
+
+def text(s, pos, font=FONT, color=TEXT, center=False):
+    img = font.render(s, True, color)
+    rect = img.get_rect()
+    if center:
+        rect.center = pos
+    else:
+        rect.topleft = pos
+    screen.blit(img, rect)
+
+
+class Button:
+    """Same call signature as before (hit / draw), but now animates:
+    - hover: fill lightens, border glows, scales up 4%
+    - press: punches down to 96% for a beat
+    - disabled: no motion at all, so 'alive' buttons read as alive by contrast
+    """
+
+    def __init__(self, rect, label=""):
+        self.rect = pygame.Rect(rect)
+        self.label = label
+        self._hover = Anim(0.0)
+        self._press_until = 0.0
+
+    def hit(self, pos):
+        return self.rect.collidepoint(pos)
+
+    def punch(self):
+        """Call this from on_event when the button is actually clicked/activated."""
+        self._press_until = time.time() + 0.09
+
+    def draw(self, enabled=True, selected=False, sub=None, label=None):
+        over = enabled and self.rect.collidepoint(pygame.mouse.get_pos())
+        self._hover.to(1.0 if over else 0.0, dur=0.12)
+        h = self._hover.update()
+
+        pressed = time.time() < self._press_until
+        scale = 0.96 if pressed else (1.0 + 0.04 * h)
+        r = self.rect
+        w, hgt = int(r.width * scale), int(r.height * scale)
+        draw_rect = pygame.Rect(0, 0, w, hgt)
+        draw_rect.center = r.center
+
+        fill = lerp_color(PANEL if enabled else (20, 24, 29), PANEL_HOVER, h)
+        if selected:
+            fill = PANEL_RAISED
+        border_col = ACCENT if selected else lerp_color((70, 88, 104), ACCENT, h)
+
+        if (selected or h > 0.05) and enabled:
+            glow_rect(screen, draw_rect, ACCENT, alpha=int(50 * max(h, 0.6 if selected else 0)), spread=8)
+
+        panel(screen, draw_rect, fill=fill, border=border_col,
+              border_w=2 if (selected or over) else 1, radius=7, shadow=enabled)
+
+        color = TEXT if enabled else (95, 102, 108)
+        label = label or self.label
+        if sub is None:
+            text(label, draw_rect.center, SMALL, color, center=True)
+        else:
+            text(label, (draw_rect.centerx, draw_rect.y + 20), SMALL, color, center=True)
+            text(sub, (draw_rect.centerx, draw_rect.y + 42), SMALL,
+                 MUTED if enabled else (80, 86, 92), center=True)
+
+
+class MuteButton:
+    def __init__(self, rect=(1216, 16, 44, 44)):
+        self.rect = pygame.Rect(rect)
+        self._hover = Anim(0.0)
+
+    def hit(self, pos):
+        return self.rect.collidepoint(pos)
+
+    def draw(self, muted=False):
+        over = self.rect.collidepoint(pygame.mouse.get_pos())
+        self._hover.to(1.0 if over else 0.0, dur=0.12)
+        h = self._hover.update()
+
+        fill = lerp_color(PANEL, PANEL_HOVER, h)
+        border_col = ACCENT if not muted else (180, 80, 80)
+        panel(screen, self.rect, fill=fill, border=border_col, border_w=2, radius=8)
+
+        cx, cy = self.rect.centerx, self.rect.centery
+        icon_color = TEXT if not muted else MUTED
+
+        pygame.draw.rect(screen, icon_color, (cx - 11, cy - 4, 5, 8))
+        pygame.draw.polygon(screen, icon_color, [(cx - 6, cy - 4), (cx + 1, cy - 9),
+                                                   (cx + 1, cy + 9), (cx - 6, cy + 4)])
+        if not muted:
+            pygame.draw.arc(screen, ACCENT, (cx - 1, cy - 6, 9, 12), -1.2, 1.2, 2)
+            pygame.draw.arc(screen, ACCENT, (cx + 3, cy - 10, 12, 20), -1.2, 1.2, 2)
+        else:
+            pygame.draw.line(screen, RED, (cx - 7, cy - 7), (cx + 9, cy + 9), 3)
+            pygame.draw.line(screen, RED, (cx + 9, cy - 7), (cx - 7, cy + 9), 3)
+
+
+class FloatingText:
+    """One drifting, fading label â€” spawn on hit/miss/ability so the player
+    SEES the consequence of a click instead of just noticing a cell changed."""
+
+    def __init__(self, txt, pos, color=TEXT, life=0.9, rise=34, font=SMALL):
+        self.txt, self.pos0, self.color, self.life, self.rise, self.font = txt, pos, color, life, rise, font
+        self.t0 = time.time()
+
+    @property
+    def dead(self):
+        return time.time() - self.t0 > self.life
+
+    def draw(self):
+        t = min(1.0, (time.time() - self.t0) / self.life)
+        y = self.pos0[1] - self.rise * ease_out_back(t, overshoot=0.6)
+        alpha = int(255 * (1 - t))
+        img = self.font.render(self.txt, True, self.color)
+        img.set_alpha(alpha)
+        rect = img.get_rect(center=(self.pos0[0], y))
+        screen.blit(img, rect)
+
+
+class FloatingTextLayer:
+    """Owns a list of FloatingText; screens keep one instance and call
+    update_and_draw() once per frame after the board is drawn."""
+
+    def __init__(self):
+        self.items = []
+
+    def spawn(self, txt, pos, color=TEXT, **kw):
+        self.items.append(FloatingText(txt, pos, color, **kw))
+
+    def update_and_draw(self):
+        self.items = [f for f in self.items if not f.dead]
+        for f in self.items:
+            f.draw()
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\__init__.py =====
+
+"""EVERYTHING PYGAME. This folder draws the game state and turns clicks into calls on rules.game.Game."""
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\screens\base.py =====
+
+"""Every screen has the same four hooks; App calls them."""
+
+
+class Screen:
+    def __init__(self, app):
+        self.app = app
+
+    @property
+    def game(self):
+        return self.app.game
+
+    def enter(self, **kwargs):
+        """Called each time App.goto() switches to this screen."""
+
+    def on_event(self, event):
+        """One pygame event (click, key...)."""
+
+    def update(self):
+        """Once per frame, before drawing."""
+
+    def draw(self):
+        """Once per frame."""
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\screens\gameover.py =====
+
+"""Win / lose overlay drawn on top of the (frozen) battle screen."""
+import pygame
+
+from ui.display import W, screen
+from ui.screens.base import Screen
+from ui.theme import ACCENT, FONT, HUGE, RED, TEXT
+from ui.widgets import text
+
+
+class GameOverScreen(Screen):
+    def on_event(self, e):
+        if e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_RETURN:
+                self.app.goto("menu")
+            elif e.key == pygame.K_ESCAPE:
+                self.app.quit()
+
+    def draw(self):
+        self.app.screens["play"].draw()
+        g = self.game
+
+        shade = pygame.Surface((W, 200), pygame.SRCALPHA)
+        shade.fill((0, 0, 0, 200))
+        screen.blit(shade, (0, 290))
+
+        if g.winner == 0:
+            text("CONGRATULATIONS!", (W // 2, 340), HUGE, ACCENT, center=True)
+            text("You won the battle!", (W // 2, 395), FONT, TEXT, center=True)
+        else:
+            text("GAME OVER", (W // 2, 340), HUGE, RED, center=True)
+            text("You lost the battle.", (W // 2, 395), FONT, TEXT, center=True)
+
+        text(
+            "Press ENTER for the menu or ESC to quit.",
+            (W // 2, 445),
+            FONT,
+            TEXT,
+            center=True
+        )
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\screens\handoff.py =====
+
+"""Curtain shown between hot-seat players so nobody sees the other's board."""
+import pygame
+
+from ui.display import H, W
+from ui.screens.base import Screen
+from ui.theme import ACCENT, BIG, FONT, MUTED, TEXT
+from ui.widgets import text
+
+
+class HandoffScreen(Screen):
+    def __init__(self, app):
+        super().__init__(app)
+        self.lines = []
+        self.after = None
+
+    def enter(self, lines, after):
+        self.lines = lines
+        self.after = after                  # function to call when the player clicks
+
+    def on_event(self, e):
+        if (e.type == pygame.MOUSEBUTTONDOWN and e.button == 1) or \
+           (e.type == pygame.KEYDOWN and e.key in (pygame.K_SPACE, pygame.K_RETURN)):
+            self.after()
+
+    def draw(self):
+        for i, line in enumerate(self.lines):
+            text(line, (W // 2, 260 + i * 44), BIG if i == 0 else FONT, ACCENT if i == 0 else TEXT, center=True)
+        text("Click or press SPACE to continue", (W // 2, H - 90), FONT, MUTED, center=True)
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\screens\menu.py =====
+
+"""Title screen: toggle optional mechanics, pick a mode."""
+import pygame
+
+from ui.display import W
+from ui.screens.base import Screen
+from ui.theme import ACCENT, FONT, HUGE, MUTED, SMALL, TEXT
+from ui.widgets import Button, text
+
+
+class MenuScreen(Screen):
+    def __init__(self, app):
+        super().__init__(app)
+        self.opt_btns = {k: Button((345 + i * 200, 370, 190, 46)) for i, k in enumerate(app.options)}
+        self.diff_btns = {
+            d: Button((345 + i * 200, 420, 190, 44))
+            for i, d in enumerate(["beginner", "intermediate", "expert"])
+        }
+        self.btn_ai = Button((345, 480, 290, 60), "PLAY VS COMPUTER")
+        self.btn_duo = Button((645, 480, 290, 60), "2 PLAYERS - ONE SCREEN")
+
+    def on_event(self, e):
+        if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+            for key, btn in self.opt_btns.items():
+                if btn.hit(e.pos):
+                    self.app.options[key] = not self.app.options[key]
+            for key, btn in self.diff_btns.items():
+                if btn.hit(e.pos):
+                    self.app.difficulty = key
+            if self.btn_ai.hit(e.pos):
+                self.app.new_game("ai")
+            elif self.btn_duo.hit(e.pos):
+                self.app.new_game("duo")
+        elif e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+            self.app.quit()
+
+    def draw(self):
+        text("WARGRID: NAVAL STRIKE", (W // 2, 100), HUGE, ACCENT, center=True)
+        text("TACTICAL EDITION  -  15x15", (W // 2, 150), FONT, MUTED, center=True)
+        rules = ["Each turn: ATTACK or use ONE ability (not both).",
+                 "Exception: the Submarine's Stealth also gives it one shot.",
+                 "Frigate: 2 shots   Destroyer: move   Carrier: 3x3 recon",
+                 "Cruiser: reveal a row   Submarine: untargetable for a round"]
+        for i, line in enumerate(rules):
+            text(line, (W // 2, 210 + i * 24), SMALL, TEXT, center=True)
+        text("OPTIONAL MECHANICS", (W // 2, 340), SMALL, MUTED, center=True)
+        names = {"bomb": "BOMB", "repair": "REPAIR", "shield": "SHIELD"}
+        for key, btn in self.opt_btns.items():
+            on = self.app.options[key]
+            btn.draw(selected=on, label=f"{names[key]}: {'ON' if on else 'OFF'}")
+        for key, btn in self.diff_btns.items():
+            btn.draw(selected=(self.app.difficulty == key), label=key.upper())
+        self.btn_ai.draw()
+        self.btn_duo.draw()
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\screens\play.py =====
+
+"""
+THE BATTLE SCREEN.
+
+Left = your fleet, right = enemy waters, middle = fleet status, bottom = action buttons.
+Clicking never changes the game directly: it calls Game.attack / use_ability / use_repair /
+use_shield (see self.click_board and self.click_action) and shows whatever comes back.
+"""
+import time
+import pygame
+from rules.game import Game
+from rules.ai import ai_step
+from rules.config import GRID, RECON_SIZE, SHIP_BY_KEY, SHIP_SPECS
+from rules.grid import area_cells, in_bounds, line_cells
+from ui.board_view import cell_at, draw_enemy_board, draw_own_board, highlight
+from ui.display import W
+from ui.layout import BOARD_Y, LEFT_X, RIGHT_X
+from ui.panels import draw_fleet_status
+from ui.screens.base import Screen
+from ui.theme import ACCENT, BIG, FONT, MUTED, ORANGE, SMALL, TEXT
+from ui.widgets import Button, text
+
+ACTIONS = ([dict(id=s["key"], ship=s["name"], label=s["label"]) for s in SHIP_SPECS] +
+           [dict(id="repair", ship=None, label="REPAIR"),
+            dict(id="shield", ship=None, label="SHIELD")])
+
+
+class PlayScreen(Screen):
+    def __init__(self, app):
+        super().__init__(app)
+        self.view = 0
+        self.pass_pending = False
+        self.selected = None
+        self.horizontal = True
+        self.msg = ""
+        self.ai_next = 0
+        self.settings_open = False
+        self.action_btns = [Button((50 + i * 165, 655, 155, 62)) for i in range(len(ACTIONS))]
+        self.pass_btn = Button((340, 655, 600, 62))
+        self.settings_btn = Button((20, 15, 35, 35))
+        self.back_btn = Button((430, 250, 340, 60))
+        self.restart_btn = Button((430, 330, 340, 60))
+        self.quit_btn = Button((430, 410, 340, 60))
+
+    def start_battle(self):
+        self.game.begin()
+        self.view = 0
+        self.pass_pending = False
+        self.selected = None
+        self.horizontal = True
+        self.msg = "Battle begins!"
+        self.settings_open = False
+        self.app.goto("play")
+
+    def resume_after_pass(self):
+        self.view = self.game.current
+        self.pass_pending = False
+        self.selected = None
+        self.msg = "Your move."
+        self.app.goto("play")
+
+    def restart_level(self):
+        self.app.game = Game(self.app.options)
+        self.app.game.names = [
+            "Player 1",
+            "Computer" if self.app.mode == "ai" else "Player 2"
+        ]
+
+        self.view = 0
+        self.pass_pending = False
+        self.selected = None
+        self.horizontal = True
+        self.msg = ""
+        self.ai_next = 0
+        self.settings_open = False
+
+        setup = self.app.screens["setup"]
+        setup.index = 0
+        setup.begin()
+
+    def can_act(self):
+        g = self.game
+        return g.winner is None and g.current == self.view and not self.pass_pending
+
+    def action_state(self, a):
+        mine = self.game.boards[self.view]
+        if a["ship"]:
+            ship = mine.get_ship(a["ship"])
+            if ship is None or ship.sunk:
+                return False, "SUNK"
+            ab = ship.ability
+            if ab.uses_left == 0:
+                return False, "used up"
+            if ab.cooldown_left:
+                return False, f"cooldown {ab.cooldown_left}"
+            return True, f"{ship.name} x{'inf' if ab.uses_left is None else ab.uses_left}"
+        if not self.app.options[a["id"]]:
+            return False, "off"
+        if a["id"] == "repair":
+            return mine.repairs_left > 0 and bool(mine.repairable_cells()), f"{mine.repairs_left} left"
+        return mine.shields_left > 0 and bool(mine.shieldable_cells()), f"{mine.shields_left} left"
+
+    def prompt(self):
+        g, v = self.game, self.view
+        name = g.names[v].upper()
+        if g.winner is not None:
+            return "GAME OVER"
+        if self.pass_pending:
+            return f"{name}: turn over."
+        if g.current != v:
+            return f"{g.names[g.current].upper()} IS THINKING..."
+        if g.attacks_left > 0:
+            return f"{name}: {g.attacks_left} shot(s) left - click enemy waters"
+        hints = {
+            None: "ATTACK (click enemy waters) OR use ONE ability",
+            "recon": f"RECON: click a cell to scan {RECON_SIZE}x{RECON_SIZE} around it",
+            "row_scan": "ROW SCAN: click any cell in the row you want revealed",
+            "relocate": "RELOCATE: click where the Destroyer's top-left goes (R rotates)",
+            "repair": "REPAIR: click a damaged cell on YOUR board",
+            "shield": "SHIELD: click one of YOUR ship cells to protect"
+        }
+        return f"{name}: {hints[self.selected]}"
+
+    def on_event(self, e):
+        if e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_ESCAPE:
+                if self.selected is not None:
+                    self.selected = None
+                else:
+                    self.settings_open = not self.settings_open
+                return
+            
+            if self.settings_open:
+                if e.key == pygame.K_1:
+                    self.settings_open = False
+                elif e.key == pygame.K_2:
+                    self.restart_level()
+                elif e.key == pygame.K_3:
+                    self.settings_open = False
+                    self.app.goto("menu")
+                return
+
+            if e.key == pygame.K_r:
+                self.horizontal = not self.horizontal
+            elif e.key in (pygame.K_SPACE, pygame.K_RETURN) and self.pass_pending:
+                self.pass_device()
+
+        elif e.type == pygame.MOUSEBUTTONDOWN:
+            if e.button == 3:
+                if self.settings_open:
+                    return
+                self.selected = None
+
+            elif e.button == 1:
+                if self.settings_open:
+                    if self.back_btn.hit(e.pos):
+                        self.settings_open = False
+                    elif self.restart_btn.hit(e.pos):
+                        self.restart_level()
+                    elif self.quit_btn.hit(e.pos):
+                        self.settings_open = False
+                        self.app.goto("menu")
+                    return
+
+                if self.settings_btn.hit(e.pos):
+                    self.settings_open = True
+                    self.selected = None
+                    return
+
+                if self.pass_pending:
+                    if self.pass_btn.hit(e.pos):
+                        self.pass_device()
+                elif self.can_act():
+                    for a, btn in zip(ACTIONS, self.action_btns):
+                        if btn.hit(e.pos):
+                            self.click_action(a)
+                            return
+                    self.click_board(e.pos)
+
+    def click_action(self, a):
+        enabled, _ = self.action_state(a)
+        if not enabled or self.game.attacks_left > 0:
+            self.msg = "That action isn't available right now."
+        elif a["id"] in ("barrage_attacks", "stealth"):
+            self.do(lambda: self.game.use_ability(a["ship"]))
+        else:
+            self.selected = None if self.selected == a["id"] else a["id"]
+            self.msg = ""
+
+    def click_board(self, pos):
+        g, sel = self.game, self.selected
+        enemy = cell_at(pos, RIGHT_X, BOARD_Y)
+        own = cell_at(pos, LEFT_X, BOARD_Y)
+
+        if sel is None:
+            if enemy:
+                self.do(lambda: g.attack(enemy))
+        elif sel in ("recon", "row_scan"):
+            if enemy:
+                self.do(lambda: g.use_ability(
+                    SHIP_BY_KEY[sel],
+                    enemy if sel == "recon" else enemy[0]
+                ))
+        elif sel == "relocate":
+            if own:
+                ship = g.boards[self.view].get_ship(SHIP_BY_KEY[sel])
+                cells = line_cells(own, ship.size, self.horizontal)
+                self.do(lambda: g.use_ability(ship.name, cells))
+        elif own:
+            self.do(lambda: g.use_repair(own) if sel == "repair" else g.use_shield(own))
+
+    def do(self, action):
+        who = self.game.current
+        ok, self.msg = action()
+        if ok:
+            self.selected = None
+        self.after_action(who)
+
+    def after_action(self, who):
+        g = self.game
+        if g.winner is not None:
+            self.app.goto("gameover")
+        elif g.current != who:
+            if self.app.mode == "duo":
+                self.pass_pending = True
+            elif g.current == 1:
+                self.ai_next = time.time() + 0.8
+            else:
+                self.msg += "   -  Your turn!"
+
+    def pass_device(self):
+        g = self.game
+        lines = [
+            f"{g.names[g.current]}'s turn",
+            ""
+        ] + g.last_turn_log[-3:] + [
+            "",
+            "Pass the device, then click to continue."
+        ]
+        self.app.handoff(lines, self.resume_after_pass)
+
+    def update(self):
+        g = self.game
+        if self.app.mode == "ai" and g.current == 1 and g.winner is None and time.time() >= self.ai_next:
+            who = g.current
+            _, self.msg = ai_step(g)
+            self.ai_next = time.time() + 0.7
+            self.after_action(who)
+
+    def draw(self):
+        g, v = self.game, self.view
+        mine, theirs = g.boards[v], g.boards[1 - v]
+        over = g.winner is not None
+
+        text(
+            "WARGRID: NAVAL STRIKE // TACTICAL EDITION",
+            (W // 2, 26),
+            BIG,
+            ACCENT,
+            center=True
+        )
+
+        own_label = "YOUR FLEET" if self.app.mode == "ai" else f"{g.names[v].upper()} - FLEET"
+
+        text(own_label, (LEFT_X, 60), FONT, TEXT)
+        text("ENEMY WATERS", (RIGHT_X, 60), FONT)
+
+        draw_own_board(mine, LEFT_X, BOARD_Y)
+        draw_enemy_board(theirs, RIGHT_X, BOARD_Y, reveal=over)
+
+        if self.can_act() and not self.settings_open:
+            self.draw_previews(mine, theirs)
+
+        draw_fleet_status(mine, theirs)
+
+        text(
+            self.prompt(),
+            (50, 598),
+            FONT,
+            ACCENT if self.can_act() else ORANGE
+        )
+
+        text(self.msg, (50, 624), SMALL, TEXT)
+
+        if self.pass_pending:
+            self.pass_btn.draw(
+                label=f"END TURN  -  pass to {g.names[g.current]}  (SPACE)"
+            )
+        else:
+            can_start = self.can_act() and g.attacks_left == 0
+            for a, btn in zip(ACTIONS, self.action_btns):
+                enabled, sub = self.action_state(a)
+                btn.draw(
+                    enabled and can_start,
+                    self.selected == a["id"],
+                    sub,
+                    a["label"]
+                )
+
+        self.settings_btn.draw(
+            True,
+            False,
+            None,
+            "*"
+        )
+
+        text(
+            "ESC / right-click cancels a selection.   Ability turns end your turn; except for Submarine and Frigate.",
+            (50, 735),
+            SMALL,
+            MUTED
+        )
+
+        if self.settings_open:
+            overlay = pygame.Surface((W, 800), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 190))
+            screen = pygame.display.get_surface()
+            screen.blit(overlay, (0, 0))
+
+            text(
+                "SETTINGS",
+                (W // 2, 150),
+                BIG,
+                ACCENT,
+                center=True
+            )
+
+            self.back_btn.draw(
+                True,
+                False,
+                None,
+                "BACK TO GAME"
+            )
+
+            self.restart_btn.draw(
+                True,
+                False,
+                None,
+                "RESTART LEVEL"
+            )
+
+            self.quit_btn.draw(
+                True,
+                False,
+                None,
+                "QUIT"
+            )
+
+            text(
+                "ESC = Back to Game",
+                (W // 2, 510),
+                SMALL,
+                MUTED,
+                center=True
+            )
+
+    def draw_previews(self, mine, theirs):
+        enemy = cell_at(pygame.mouse.get_pos(), RIGHT_X, BOARD_Y)
+        own = cell_at(pygame.mouse.get_pos(), LEFT_X, BOARD_Y)
+        sel = self.selected
+        good = (73, 207, 180, 100)
+
+        if enemy and sel is None and theirs.can_fire(enemy):
+            highlight([enemy], RIGHT_X, BOARD_Y, good)
+
+        elif enemy and sel == "recon":
+            highlight(
+                area_cells(enemy, RECON_SIZE),
+                RIGHT_X,
+                BOARD_Y,
+                (244, 218, 102, 90)
+            )
+
+        elif enemy and sel == "row_scan":
+            highlight(
+                [(enemy[0], c) for c in range(GRID)],
+                RIGHT_X,
+                BOARD_Y,
+                (244, 218, 102, 90)
+            )
+
+        elif sel == "relocate" and own:
+            ship = mine.get_ship(SHIP_BY_KEY[sel])
+            cells = line_cells(own, ship.size, self.horizontal)
+            color = (
+                good
+                if mine.check_move(ship, cells) is None
+                else (230, 78, 92, 110)
+            )
+            highlight(
+                [c for c in cells if in_bounds(c)],
+                LEFT_X,
+                BOARD_Y,
+                color
+            )
+
+        elif sel == "repair":
+            highlight(
+                mine.repairable_cells(),
+                LEFT_X,
+                BOARD_Y,
+                (244, 218, 102, 90)
+            )
+
+        elif sel == "shield":
+            highlight(
+                mine.shieldable_cells(),
+                LEFT_X,
+                BOARD_Y,
+                (90, 200, 240, 70)
+            )
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\screens\setup.py =====
+
+"""Fleet deployment: place each ship (and the bomb) on your own board."""
+import pygame
+
+from rules.board import Board
+from rules.config import SHIP_SPECS, SPEC_BY_NAME
+from rules.grid import in_bounds, line_cells
+from ui.board_view import cell_at, draw_own_board, highlight
+from ui.display import W, screen
+from ui.layout import BOARD_Y, SETUP_X
+from ui.screens.base import Screen
+from ui.theme import ACCENT, BIG, MUTED, PANEL_2, SMALL, TEXT
+from ui.widgets import Button, text
+
+
+class SetupScreen(Screen):
+    def __init__(self, app):
+        super().__init__(app)
+        self.index = 0                      # which player is deploying (0 or 1)
+        self.board = Board()
+        self.sel = None                     # selected item: a ship name, "Bomb", or None
+        self.horizontal = True
+        self.btn_random = Button((640, 0, 190, 44), "RANDOMIZE ALL")
+        self.btn_ready = Button((850, 0, 190, 44), "READY")
+
+    # ----- flow -----
+    def begin(self):
+        """Start (or restart) deployment for player `self.index`."""
+        self.board = Board()
+        self.sel = SHIP_SPECS[0]["name"]
+        self.horizontal = True
+        self.app.goto("setup")
+
+    def finish(self):
+        app = self.app
+        app.game.boards[self.index] = self.board
+        if app.mode == "ai":
+            app.game.boards[1].random_setup(app.options["bomb"])
+            app.screens["play"].start_battle()
+        elif self.index == 0:
+            self.index = 1
+            app.handoff(["Player 2: deploy your fleet", "Player 1, look away!"], self.begin)
+        else:
+            app.handoff(["Both fleets are ready.", "Player 1 starts - pass the device."],
+                        app.screens["play"].start_battle)
+
+    # ----- item list -----
+    def items(self):
+        return [s["name"] for s in SHIP_SPECS] + (["Bomb"] if self.app.options["bomb"] else [])
+
+    def is_placed(self, item):
+        b = self.board
+        return b.bomb is not None if item == "Bomb" else b.get_ship(item) is not None
+
+    def next_unplaced(self):
+        return next((i for i in self.items() if not self.is_placed(i)), None)
+
+    def pick_up(self, item):
+        if item == "Bomb":
+            self.board.bomb = None
+        else:
+            self.board.remove_ship(item)
+        self.sel = item
+
+    def item_rect(self, i):
+        return pygame.Rect(640, 190 + i * 44, 400, 38)
+
+    def ready(self):
+        return self.board.setup_done(self.app.options["bomb"])
+
+    def layout_buttons(self):
+        y = 190 + len(self.items()) * 44 + 20
+        self.btn_random.rect.y = self.btn_ready.rect.y = y
+
+    # ----- input -----
+    def on_event(self, e):
+        b = self.board
+        if e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_r:
+                self.horizontal = not self.horizontal
+            elif e.key == pygame.K_RETURN and self.ready():
+                self.finish()
+        elif e.type == pygame.MOUSEBUTTONDOWN:
+            if e.button == 3:
+                self.horizontal = not self.horizontal
+            elif e.button == 1:
+                self.layout_buttons()
+                for i, item in enumerate(self.items()):
+                    if self.item_rect(i).collidepoint(e.pos):
+                        self.pick_up(item)
+                        return
+                if self.btn_random.hit(e.pos):
+                    b.random_setup(self.app.options["bomb"])
+                    self.sel = None
+                elif self.btn_ready.hit(e.pos) and self.ready():
+                    self.finish()
+                cell = cell_at(e.pos, SETUP_X, BOARD_Y)
+                if cell is None:
+                    return
+                if self.sel == "Bomb":
+                    if b.set_bomb(cell):
+                        self.sel = self.next_unplaced()
+                elif self.sel:
+                    spec = SPEC_BY_NAME[self.sel]
+                    if b.place_ship(spec, line_cells(cell, spec["size"], self.horizontal)):
+                        self.sel = self.next_unplaced()
+                else:                           # nothing selected: click a ship/bomb to pick it up
+                    ship = b.ship_at(cell)
+                    if ship:
+                        self.pick_up(ship.name)
+                    elif cell == b.bomb:
+                        self.pick_up("Bomb")
+
+    # ----- drawing -----
+    def draw(self):
+        b = self.board
+        text(f"FLEET DEPLOYMENT - {self.game.names[self.index].upper()}", (W // 2, 40), BIG, ACCENT, center=True)
+        draw_own_board(b, SETUP_X, BOARD_Y)
+
+        hover = cell_at(pygame.mouse.get_pos(), SETUP_X, BOARD_Y)
+        if hover and self.sel == "Bomb":
+            highlight([hover], SETUP_X, BOARD_Y, (239, 166, 70, 110) if b.ship_at(hover) is None else (230, 78, 92, 110))
+        elif hover and self.sel:
+            cells = line_cells(hover, SPEC_BY_NAME[self.sel]["size"], self.horizontal)
+            color = (73, 207, 180, 110) if b.can_place(cells) else (230, 78, 92, 110)
+            highlight([c for c in cells if in_bounds(c)], SETUP_X, BOARD_Y, color)
+
+        text("Pick an item, then click the board.  R / right-click rotates.", (640, 105), SMALL, MUTED)
+        text("Click a placed ship to pick it up and move it.", (640, 127), SMALL, MUTED)
+        if self.app.options["bomb"]:
+            text("Bomb: hidden trap on open water. If the enemy fires there,", (640, 149), SMALL, MUTED)
+            text("THEIR healthiest ship takes 1 damage.", (640, 165), SMALL, MUTED)
+        for i, item in enumerate(self.items()):
+            rect = self.item_rect(i)
+            size = f" ({SPEC_BY_NAME[item]['size']})" if item != "Bomb" else ""
+            state = "placed" if self.is_placed(item) else "-"
+            pygame.draw.rect(screen, PANEL_2, rect, border_radius=6)
+            pygame.draw.rect(screen, ACCENT if self.sel == item else (75, 95, 110), rect, 2, border_radius=6)
+            text(f"{item}{size}", (rect.x + 14, rect.y + 10), SMALL, TEXT)
+            text(state, (rect.right - 70, rect.y + 10), SMALL, ACCENT if state == "placed" else MUTED)
+        self.layout_buttons()
+        self.btn_random.draw()
+        self.btn_ready.draw(enabled=self.ready())
+
+
+===== C:\Users\michelle\Downloads\files\battleships\battleships\ui\screens\__init__.py =====
+
+"""
+One file per screen:
+  menu.py      title + options + choose mode
+  setup.py     place your ships (and bomb)
+  handoff.py   "pass the device" curtain between hot-seat players
+  play.py      the battle
+  gameover.py  win / lose overlay on top of the battle
+"""
+
