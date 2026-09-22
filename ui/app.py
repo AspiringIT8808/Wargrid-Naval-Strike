@@ -23,7 +23,8 @@ from ui.widgets import MuteButton
 class App:
     def __init__(self):
         self.options = {"bomb": True, "repair": True, "shield": True}   # optional mechanics
-        self.mode = "ai"                    # "ai" or "duo" (two players, one screen)
+        self.mode = "ai"  
+        self.difficulty = "intermediate"   # "beginner" | "intermediate" | "expert"
         self.game = None
         self.sound_manager = SoundManager()
         self.mute_btn = MuteButton()
@@ -50,6 +51,7 @@ class App:
         """Called from the menu. Creates the Game and starts fleet deployment."""
         self.mode = mode
         self.game = Game(self.options)
+        self.game.difficulty = self.difficulty
         self.game.names = ["Player 1", "Computer" if mode == "ai" else "Player 2"]
         setup = self.screens["setup"]
         setup.index = 0

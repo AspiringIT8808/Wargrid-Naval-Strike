@@ -11,6 +11,10 @@ class MenuScreen(Screen):
     def __init__(self, app):
         super().__init__(app)
         self.opt_btns = {k: Button((345 + i * 200, 370, 190, 46)) for i, k in enumerate(app.options)}
+        self.diff_btns = {
+            d: Button((345 + i * 200, 420, 190, 44))
+            for i, d in enumerate(["beginner", "intermediate", "expert"])
+        }
         self.btn_ai = Button((345, 480, 290, 60), "PLAY VS COMPUTER")
         self.btn_duo = Button((645, 480, 290, 60), "2 PLAYERS - ONE SCREEN")
 
@@ -19,6 +23,9 @@ class MenuScreen(Screen):
             for key, btn in self.opt_btns.items():
                 if btn.hit(e.pos):
                     self.app.options[key] = not self.app.options[key]
+            for key, btn in self.diff_btns.items():
+                if btn.hit(e.pos):
+                    self.app.difficulty = key
             if self.btn_ai.hit(e.pos):
                 self.app.new_game("ai")
             elif self.btn_duo.hit(e.pos):
@@ -40,6 +47,7 @@ class MenuScreen(Screen):
         for key, btn in self.opt_btns.items():
             on = self.app.options[key]
             btn.draw(selected=on, label=f"{names[key]}: {'ON' if on else 'OFF'}")
+        for key, btn in self.diff_btns.items():
+            btn.draw(selected=(self.app.difficulty == key), label=key.upper())
         self.btn_ai.draw()
         self.btn_duo.draw()
-
