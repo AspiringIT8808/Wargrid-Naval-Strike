@@ -33,13 +33,9 @@ class PlayScreen(Screen):
         self.horizontal = True
         self.msg = ""
         self.ai_next = 0
-        self.settings_open = False
         self.action_btns = [Button((50 + i * 165, 655, 155, 62)) for i in range(len(ACTIONS))]
         self.pass_btn = Button((340, 655, 600, 62))
         self.settings_btn = Button((20, 15, 35, 35))
-        self.back_btn = Button((430, 250, 340, 60))
-        self.restart_btn = Button((430, 330, 340, 60))
-        self.quit_btn = Button((430, 410, 340, 60))
 
     def start_battle(self):
         self.game.begin()
@@ -48,7 +44,6 @@ class PlayScreen(Screen):
         self.selected = None
         self.horizontal = True
         self.msg = "Battle begins!"
-        self.settings_open = False
         self.app.goto("play")
 
     def resume_after_pass(self):
@@ -71,7 +66,6 @@ class PlayScreen(Screen):
         self.horizontal = True
         self.msg = ""
         self.ai_next = 0
-        self.settings_open = False
 
         setup = self.app.screens["setup"]
         setup.index = 0
@@ -122,58 +116,45 @@ class PlayScreen(Screen):
 
     def on_event(self, e):
         if e.type == pygame.KEYDOWN:
+
             if e.key == pygame.K_ESCAPE:
                 if self.selected is not None:
                     self.selected = None
                 else:
-                    self.settings_open = not self.settings_open
-                return
-            
-            if self.settings_open:
-                if e.key == pygame.K_1:
-                    self.settings_open = False
-                elif e.key == pygame.K_2:
-                    self.restart_level()
-                elif e.key == pygame.K_3:
-                    self.settings_open = False
-                    self.app.goto("menu")
+                    self.app.open_settings("play")
                 return
 
             if e.key == pygame.K_r:
                 self.horizontal = not self.horizontal
+
             elif e.key in (pygame.K_SPACE, pygame.K_RETURN) and self.pass_pending:
                 self.pass_device()
 
         elif e.type == pygame.MOUSEBUTTONDOWN:
+
+            # Right-click cancels the currently selected ability.
             if e.button == 3:
-                if self.settings_open:
-                    return
                 self.selected = None
 
+            # Left-click
             elif e.button == 1:
-                if self.settings_open:
-                    if self.back_btn.hit(e.pos):
-                        self.settings_open = False
-                    elif self.restart_btn.hit(e.pos):
-                        self.restart_level()
-                    elif self.quit_btn.hit(e.pos):
-                        self.settings_open = False
-                        self.app.goto("menu")
-                    return
 
+                # Open the dedicated ESC Settings screen.
                 if self.settings_btn.hit(e.pos):
-                    self.settings_open = True
+                    self.app.open_settings("play")
                     self.selected = None
                     return
 
                 if self.pass_pending:
                     if self.pass_btn.hit(e.pos):
                         self.pass_device()
+
                 elif self.can_act():
                     for a, btn in zip(ACTIONS, self.action_btns):
                         if btn.hit(e.pos):
                             self.click_action(a)
                             return
+
                     self.click_board(e.pos)
 
     def click_action(self, a):
@@ -267,7 +248,7 @@ class PlayScreen(Screen):
         draw_own_board(mine, LEFT_X, BOARD_Y)
         draw_enemy_board(theirs, RIGHT_X, BOARD_Y, reveal=over)
 
-        if self.can_act() and not self.settings_open:
+        if self.can_act():
             self.draw_previews(mine, theirs)
 
         draw_fleet_status(mine, theirs)
@@ -309,49 +290,6 @@ class PlayScreen(Screen):
             SMALL,
             MUTED
         )
-
-        if self.settings_open:
-            overlay = pygame.Surface((W, 800), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 190))
-            screen = pygame.display.get_surface()
-            screen.blit(overlay, (0, 0))
-
-            text(
-                "SETTINGS",
-                (W // 2, 150),
-                BIG,
-                ACCENT,
-                center=True
-            )
-
-            self.back_btn.draw(
-                True,
-                False,
-                None,
-                "BACK TO GAME"
-            )
-
-            self.restart_btn.draw(
-                True,
-                False,
-                None,
-                "RESTART LEVEL"
-            )
-
-            self.quit_btn.draw(
-                True,
-                False,
-                None,
-                "QUIT"
-            )
-
-            text(
-                "ESC = Back to Game",
-                (W // 2, 510),
-                SMALL,
-                MUTED,
-                center=True
-            )
 
     def draw_previews(self, mine, theirs):
         enemy = cell_at(pygame.mouse.get_pos(), RIGHT_X, BOARD_Y)

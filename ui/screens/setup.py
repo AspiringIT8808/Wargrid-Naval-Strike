@@ -74,11 +74,19 @@ class SetupScreen(Screen):
     # ----- input -----
     def on_event(self, e):
         b = self.board
+
         if e.type == pygame.KEYDOWN:
+
+            if e.key == pygame.K_ESCAPE:
+                self.app.open_settings("setup")
+                return
+
             if e.key == pygame.K_r:
                 self.horizontal = not self.horizontal
+
             elif e.key == pygame.K_RETURN and self.ready():
                 self.finish()
+
         elif e.type == pygame.MOUSEBUTTONDOWN:
             if e.button == 3:
                 self.horizontal = not self.horizontal
