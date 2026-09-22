@@ -97,12 +97,19 @@ class Game:
     def _shoot(self, cell):
         result, ship = self.foe.receive_attack(cell)
         where = cell_name(cell)
+
         if result == "hit":
             return f"fires at {where}: HIT" + (f" - {ship.name} SUNK!" if ship.sunk else "")
+
         if result == "blocked":
             return f"fires at {where}: a shield blocked the hit"
+
+        if result == "stealth":
+            return f"fires at {where}: SUBMARINE DETECTED - no damage"
+
         if result == "bomb":
             return f"fires at {where}: BOMB! " + extras.detonate_bomb(self.me)
+
         return f"fires at {where}: miss"
 
     # ----- ship abilities -----
