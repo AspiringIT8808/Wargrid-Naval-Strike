@@ -123,10 +123,12 @@ class PlayScreen(Screen):
     def on_event(self, e):
         if e.type == pygame.KEYDOWN:
             if e.key == pygame.K_ESCAPE:
-                self.settings_open = not self.settings_open
-                self.selected = None
+                if self.selected is not None:
+                    self.selected = None
+                else:
+                    self.settings_open = not self.settings_open
                 return
-
+            
             if self.settings_open:
                 if e.key == pygame.K_1:
                     self.settings_open = False
@@ -146,10 +148,7 @@ class PlayScreen(Screen):
             if e.button == 3:
                 if self.settings_open:
                     return
-                if self.selected == "relocate":
-                    self.horizontal = not self.horizontal
-                else:
-                    self.selected = None
+                self.selected = None
 
             elif e.button == 1:
                 if self.settings_open:
@@ -305,7 +304,7 @@ class PlayScreen(Screen):
         )
 
         text(
-            "ESC / right-click cancels a selection.   Ability turns end your turn; only the Submarine also shoots.",
+            "ESC / right-click cancels a selection.   Ability turns end your turn; except for Submarine and Frigate.",
             (50, 735),
             SMALL,
             MUTED
