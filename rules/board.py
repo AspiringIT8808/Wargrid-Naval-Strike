@@ -91,20 +91,28 @@ class Board:
     # ----- damage -----
     def receive_attack(self, cell):
         """Resolve one shot. Returns (result, ship_or_None)."""
-        if cell == self.bomb:                                  # hidden trap
+        if cell == self.bomb:
             self.shots[cell] = "bomb"
             self.bomb = None
             return "bomb", None
+
         ship = self.ship_at(cell)
-        if ship is None or ship.stealthed:                     # stealth: shot passes through
+
+        if ship is None:
             self.shots[cell] = "miss"
             return "miss", None
+
+        if ship.stealthed:
+            return "stealth", ship
+
         i = ship.cells.index(cell)
-        if i in ship.shield:                                   # shield absorbs one hit
+
+        if i in ship.shield:
             ship.shield.discard(i)
             self.shots[cell] = "blocked"
             return "blocked", ship
-        ship.hit.add(i)                                        # (re-hitting a damaged segment is harmless)
+
+        ship.hit.add(i)
         self.shots[cell] = "hit"
         return "hit", ship
 
