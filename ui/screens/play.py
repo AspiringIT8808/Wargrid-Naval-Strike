@@ -36,7 +36,7 @@ class PlayScreen(Screen):
         self.settings_open = False
         self.action_btns = [Button((50 + i * 165, 655, 155, 62)) for i in range(len(ACTIONS))]
         self.pass_btn = Button((340, 655, 600, 62))
-        self.settings_btn = Button((1090, 655, 155, 62))
+        self.settings_btn = Button((20, 15, 35, 35))
         self.back_btn = Button((430, 250, 340, 60))
         self.restart_btn = Button((430, 330, 340, 60))
         self.quit_btn = Button((430, 410, 340, 60))
@@ -301,7 +301,7 @@ class PlayScreen(Screen):
             True,
             False,
             None,
-            "SETTINGS"
+            "*"
         )
 
         text(
