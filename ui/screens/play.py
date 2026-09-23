@@ -4,20 +4,25 @@ THE BATTLE SCREEN.
 Left = your fleet, right = enemy waters, middle = fleet status, bottom = action buttons.
 Clicking never changes the game directly: it calls Game.attack / use_ability / use_repair /
 use_shield (see self.click_board and self.click_action) and shows whatever comes back.
+
+Result feedback (self.msg / self.floaters) is purely cosmetic: it reads the log line
+Game already returned and turns it into a colored line + a floating callout over the
+cell that was hit, so a HIT/MISS/SUNK isn't just a small line of text you can miss.
 """
+import re
 import time
 import pygame
 from rules.game import Game
 from rules.ai import ai_step
 from rules.config import GRID, RECON_SIZE, SHIP_BY_KEY, SHIP_SPECS
-from rules.grid import area_cells, in_bounds, line_cells
-from ui.board_view import cell_at, draw_enemy_board, draw_own_board, highlight
+from rules.grid import area_cells, cell_from_name, in_bounds, line_cells
+from ui.board_view import cell_at, cell_rect, draw_enemy_board, draw_own_board, highlight
 from ui.display import W
 from ui.layout import BOARD_Y, LEFT_X, RIGHT_X
 from ui.panels import draw_fleet_status
 from ui.screens.base import Screen
-from ui.theme import ACCENT, BIG, FONT, MUTED, ORANGE, SMALL, TEXT
-from ui.widgets import Button, text
+from ui.theme import ACCENT, BIG, CYAN, DANGER, FONT, GOLD, MUTED, ORANGE, SMALL, TEXT
+from ui.widgets import Button, FloatingTextLayer, text
 
 ACTIONS = ([dict(id=s["key"], ship=s["name"], label=s["label"]) for s in SHIP_SPECS] +
            [dict(id="repair", ship=None, label="REPAIR"),
@@ -32,6 +37,8 @@ class PlayScreen(Screen):
         self.selected = None
         self.horizontal = True
         self.msg = ""
+        self.msg_color = TEXT
+        self.floaters = FloatingTextLayer()
         self.ai_next = 0
         self.action_btns = [Button((50 + i * 165, 655, 155, 62)) for i in range(len(ACTIONS))]
         self.pass_btn = Button((340, 655, 600, 62))
@@ -43,7 +50,8 @@ class PlayScreen(Screen):
         self.pass_pending = False
         self.selected = None
         self.horizontal = True
-        self.msg = "Battle begins!"
+        self.msg = "Battle begins! Fire when ready."
+        self.msg_color = ACCENT
         self.app.goto("play")
 
     def resume_after_pass(self):
@@ -51,6 +59,7 @@ class PlayScreen(Screen):
         self.pass_pending = False
         self.selected = None
         self.msg = "Your move."
+        self.msg_color = ACCENT
         self.app.goto("play")
 
     def restart_level(self):
@@ -65,6 +74,7 @@ class PlayScreen(Screen):
         self.selected = None
         self.horizontal = True
         self.msg = ""
+        self.msg_color = TEXT
         self.ai_next = 0
 
         setup = self.app.screens["setup"]
@@ -161,6 +171,7 @@ class PlayScreen(Screen):
         enabled, _ = self.action_state(a)
         if not enabled or self.game.attacks_left > 0:
             self.msg = "That action isn't available right now."
+            self.msg_color = MUTED
         elif a["id"] in ("barrage_attacks", "stealth"):
             self.do(lambda: self.game.use_ability(a["ship"]))
         else:
@@ -194,6 +205,8 @@ class PlayScreen(Screen):
         ok, self.msg = action()
         if ok:
             self.selected = None
+            self.spawn_floater(self.msg, who)
+        self.msg_color = self.result_color(self.msg)
         self.after_action(who)
 
     def after_action(self, who):
@@ -224,8 +237,43 @@ class PlayScreen(Screen):
         if self.app.mode == "ai" and g.current == 1 and g.winner is None and time.time() >= self.ai_next:
             who = g.current
             _, self.msg = ai_step(g)
+            self.spawn_floater(self.msg, who)
+            self.msg_color = self.result_color(self.msg)
             self.ai_next = time.time() + 0.7
             self.after_action(who)
+
+    # ----- result feedback: color the message, pop a callout over the cell -----
+    def result_label_color(self, msg):
+        low = msg.lower()
+        if "sunk" in low:
+            return "SUNK!", GOLD
+        if ": hit" in low:
+            return "HIT", DANGER
+        if "blocked" in low:
+            return "BLOCKED", CYAN
+        if "detected" in low:
+            return "NO EFFECT", MUTED
+        if "bomb" in low:
+            return "BOOM!", ORANGE
+        if ": miss" in low:
+            return "MISS", MUTED
+        return None, TEXT
+
+    def result_color(self, msg):
+        _, color = self.result_label_color(msg)
+        return color
+
+    def spawn_floater(self, msg, actor_idx):
+        m = re.search(r"fires at ([A-Za-z]\d{1,2})", msg)
+        if not m:
+            return
+        label, color = self.result_label_color(msg)
+        if not label:
+            return
+        cell = cell_from_name(m.group(1))
+        ox = RIGHT_X if actor_idx == self.view else LEFT_X
+        rect = cell_rect(ox, BOARD_Y, cell)
+        self.floaters.spawn(label, rect.center, color, font=FONT)
 
     def draw(self):
         g, v = self.game, self.view
@@ -251,6 +299,8 @@ class PlayScreen(Screen):
         if self.can_act():
             self.draw_previews(mine, theirs)
 
+        self.floaters.update_and_draw()
+
         draw_fleet_status(mine, theirs)
 
         text(
@@ -260,7 +310,7 @@ class PlayScreen(Screen):
             ACCENT if self.can_act() else ORANGE
         )
 
-        text(self.msg, (50, 624), SMALL, TEXT)
+        text(self.msg, (50, 624), FONT, self.msg_color)
 
         if self.pass_pending:
             self.pass_btn.draw(

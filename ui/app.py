@@ -11,11 +11,13 @@ import pygame
 from audio.sound_manager import SoundManager
 from rules.game import Game
 from ui.display import clock, screen
+from ui.screens.codex import CodexScreen
 from ui.screens.gameover import GameOverScreen
 from ui.screens.handoff import HandoffScreen
 from ui.screens.menu import MenuScreen
 from ui.screens.play import PlayScreen
 from ui.screens.setup import SetupScreen
+from ui.screens.stats import StatsScreen
 from ui.theme import BG
 from ui.widgets import MuteButton
 from ui.screens.settings import SettingsScreen
@@ -36,6 +38,8 @@ class App:
             "play": PlayScreen(self),
             "gameover": GameOverScreen(self),
             "settings": SettingsScreen(self),
+            "codex": CodexScreen(self),
+            "stats": StatsScreen(self),
         }
         self.current = self.screens["menu"]
         self.sound_manager.start_music()
@@ -87,4 +91,3 @@ class App:
             self.mute_btn.draw(muted=self.sound_manager.is_muted)
             pygame.display.flip()
             clock.tick(60)
-

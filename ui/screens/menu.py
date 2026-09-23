@@ -17,6 +17,7 @@ class MenuScreen(Screen):
         }
         self.btn_ai = Button((345, 480, 290, 60), "PLAY VS COMPUTER")
         self.btn_duo = Button((645, 480, 290, 60), "2 PLAYERS - ONE SCREEN")
+        self.btn_codex = Button((1000, 20, 200, 40), "FLEET CODEX")
 
     def on_event(self, e):
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
@@ -30,6 +31,8 @@ class MenuScreen(Screen):
                 self.app.new_game("ai")
             elif self.btn_duo.hit(e.pos):
                 self.app.new_game("duo")
+            elif self.btn_codex.hit(e.pos):
+                self.app.goto("codex", return_to="menu")
         elif e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
             self.app.quit()
 
@@ -51,3 +54,4 @@ class MenuScreen(Screen):
             btn.draw(selected=(self.app.difficulty == key), label=key.upper())
         self.btn_ai.draw()
         self.btn_duo.draw()
+        self.btn_codex.draw()
