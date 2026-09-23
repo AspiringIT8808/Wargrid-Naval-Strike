@@ -109,7 +109,7 @@ class FloatingText:
     """One drifting, fading label — spawn on hit/miss/ability so the player
     SEES the consequence of a click instead of just noticing a cell changed."""
 
-    def __init__(self, txt, pos, color=TEXT, life=0.9, rise=34, font=SMALL):
+    def __init__(self, txt, pos, color=TEXT, life=2.5, rise=45, font=SMALL):
         self.txt, self.pos0, self.color, self.life, self.rise, self.font = txt, pos, color, life, rise, font
         self.t0 = time.time()
 

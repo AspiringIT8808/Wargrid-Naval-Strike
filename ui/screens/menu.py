@@ -39,10 +39,10 @@ class MenuScreen(Screen):
     def draw(self):
         text("WARGRID: NAVAL STRIKE", (W // 2, 100), HUGE, ACCENT, center=True)
         text("TACTICAL EDITION  -  15x15", (W // 2, 150), FONT, MUTED, center=True)
-        rules = ["Each turn: ATTACK or use ONE ability (not both).",
-                 "Exception: the Submarine's Stealth also gives it one shot.",
-                 "Frigate: 2 shots   Destroyer: move   Carrier: 3x3 recon",
-                 "Cruiser: reveal a row   Submarine: untargetable for a round"]
+        rules = ["Wargrid: Naval Warfare is a turn-based strategy game for 1 or 2 players OR A.I.",
+                 "The goal is to sink the enemy fleet before they sink yours. Strategic placement of ships and use of abilities is key to victory",
+                 "You can review and study the fleet in the FLEET CODEX, which is accessible from the main menu.",
+                 "A.I difficulty can be adjusted in the main menu, with three options: Beginner, Intermediate, and Expert."]
         for i, line in enumerate(rules):
             text(line, (W // 2, 210 + i * 24), SMALL, TEXT, center=True)
         text("OPTIONAL MECHANICS", (W // 2, 340), SMALL, MUTED, center=True)
